@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>👨‍🏫 교사 대시보드 - 알고리즘 윤리</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+  </style>
+</head>
+<body class="bg-slate-100 font-sans text-gray-800">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const SUPABASE_URL = 'https://plsdgoibpfjuvdtjvffb.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_oXlE7oQpWNxRzCHwXdp7Vw_EnDwLXpL';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const allTopics = [
+      { id: 1, icon: '🎮', label: '로블록스 게임' }, { id: 2, icon: '⛏', label: '마인크래프트' },
+      { id: 3, icon: '🐶', label: '귀여운 강아지' }, { id: 4, icon: '🐱', label: '예쁜 고양이' },
+      { id: 5, icon: '🏎️', label: '슈퍼카 레이싱' }, { id: 6, icon: '🎢', label: '놀이공원 탐험' },
+      { id: 7, icon: '🎤', label: '아이돌/K-POP' }, { id: 8, icon: '💃', label: '댄스 챌린지' },
+      { id: 9, icon: '🔬', label: '신기한 과학실험' }, { id: 10, icon: '💧', label: '액체괴물 만들기' },
+      { id: 11, icon: '🍔', label: '엄청난 먹방' }, { id: 12, icon: '🎬', label: '인기 애니메이션' },
+      { id: 13, icon: '😂', label: '꿀잼 코미디' }, { id: 14, icon: '🎨', label: '금손 그림 그리기' },
+      { id: 15, icon: '🧩', label: '레고 조립 달인' }, { id: 16, icon: '🎩', label: '신기한 마술' },
+      { id: 17, icon: '🍳', label: '간단 요리 레시피' }, { id: 18, icon: '🚀', label: '신비한 우주 탐험' },
+      { id: 19, icon: '👻', label: '오싹한 미스터리' }, { id: 20, icon: '📹', label: '유튜버 브이로그' },
+      { id: 21, icon: '🦖', label: '공룡의 세계' }, { id: 22, icon: '🐹', label: '귀여운 햄스터' },
+      { id: 23, icon: '💅', label: '화려한 네일아트' }, { id: 24, icon: '🎪', label: '서커스 묘기' },
+      { id: 25, icon: '🎧', label: '수면 ASMR' }, { id: 26, icon: '⚽', label: '축구 하이라이트' },
+      { id: 27, icon: '⚾', label: '야구 명장면' }, { id: 28, icon: '🏕️', label: '감성 캠핑' },
+      { id: 29, icon: '🥋', label: '태권도 격파' }, { id: 30, icon: '🦈', label: '심해 상어 탐험' },
+      { id: 31, icon: '👗', label: '패션 코디' }, { id: 32, icon: '🛹', label: '스케이트보드 묘기' },
+      { id: 33, icon: '🍰', label: '디저트 만들기' }, { id: 34, icon: '🎹', label: '피아노 연주' },
+      { id: 35, icon: '✈️', label: '세계 여행' }, { id: 36, icon: '🐬', label: '돌고래 쇼' },
+      { id: 37, icon: '🚴', label: '자전거 라이딩' }, { id: 38, icon: '🎭', label: '상황극 꽁트' },
+      { id: 39, icon: '📚', label: '흥미진진 역사' }, { id: 40, icon: '🐠', label: '아름다운 수족관' }
+    ];
+
+    const getIcon = (label) => {
+      if(!label) return '✨';
+      const found = allTopics.find(t => t.label === label.trim());
+      return found ? found.icon : '✨';
+    };
+
+    function Dashboard() {
+      const [submissions, setSubmissions] = useState([]);
+      const [selectedCard, setSelectedCard] = useState(null);
+      const [errorMsg, setErrorMsg] = useState('');
+
+      const fetchTrays = async () => {
+        try {
+          const { data, error } = await supabase.from('media_trays').select('*').order('created_at', { ascending: false });
+          if (error) throw error;
+          if (data) {
+            setSubmissions(data);
+            setErrorMsg('');
+          }
+        } catch (err) {
+          console.error(err);
+          setErrorMsg(err.message);
+        }
+      };
+
+      useEffect(() => {
+        fetchTrays();
+        const interval = setInterval(fetchTrays, 3000);
+        return () => clearInterval(interval);
+      }, []);
+
+      const handleDelete = async (id, e) => {
+        e.stopPropagation(); 
+        if (window.confirm("🚨 정말로 이 식판(데이터)을 삭제하시겠습니까?")) {
+          try {
+            const { error } = await supabase.from('media_trays').delete().eq('id', id);
+            if (error) throw error;
+            setSubmissions(submissions.filter(s => s.id !== id));
+            if (selectedCard && selectedCard.id === id) setSelectedCard(null); 
+          } catch (err) {
+            alert("삭제 중 오류가 발생했습니다: " + err.message);
+          }
+        }
+      };
+
+      const Card = ({ item }) => {
+        // | 기호로 묶인 두 개의 base_topic 파싱
+        let base1 = { icon: '❔', label: '' };
+        let base2 = { icon: '❔', label: '' };
+        
+        if (item.base_topic) {
+          const parts = item.base_topic.split('|');
+          base1 = { icon: getIcon(parts[0]), label: parts[0] };
+          // 두 번째가 없으면 첫 번째와 동일하게 처리
+          base2 = { icon: getIcon(parts[1] || parts[0]), label: parts[1] || parts[0] }; 
+        }
+
+        return (
+          <div onClick={() => setSelectedCard(item)} className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border-2 border-slate-200 cursor-pointer hover:shadow-xl hover:border-blue-400 transition-all transform hover:-translate-y-1 relative group flex flex-col h-full">
+            <div className="flex justify-between items-start gap-2 mb-4 border-b pb-3 shrink-0">
+              <h3 className="font-black text-lg sm:text-xl text-slate-800 break-keep leading-tight"><span className="text-green-600">{item.user_name}</span>의 식판</h3>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="bg-blue-100 text-blue-800 text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full border border-blue-200 whitespace-nowrap shrink-0">영양사: {item.partner_name}</span>
+                <button onClick={(e) => handleDelete(item.id, e)} className="text-slate-300 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-full transition-all shrink-0" title="삭제하기">🗑️</button>
+              </div>
+            </div>
+            
+            {/* 미니 5구 식판 (텍스트 없이 아이콘만) */}
+            <div className="flex-1 flex flex-col justify-center">
+              <div className="bg-slate-300 p-2.5 sm:p-3 rounded-2xl w-full flex flex-col gap-2.5 sm:gap-3 shadow-inner border-2 border-slate-400/50 box-border">
+                {/* 상단 3구 (Grid) */}
+                <div className="grid grid-cols-3 gap-2.5 sm:gap-3 w-full h-16 sm:h-20">
+                  {[base1.icon, getIcon(item.topic_1), base2.icon].map((icon, idx) => (
+                    <div key={idx} className="bg-slate-50 border-2 border-white rounded-[0.8rem] flex items-center justify-center shadow-sm w-full h-full">
+                      <span className="text-3xl sm:text-4xl drop-shadow-sm">{icon}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* 하단 2구 (Grid) */}
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3 w-full h-20 sm:h-24">
+                  {[getIcon(item.topic_2), getIcon(item.topic_3)].map((icon, idx) => (
+                    <div key={idx} className="bg-slate-50 border-2 border-white rounded-xl flex items-center justify-center shadow-sm w-full h-full">
+                      <span className="text-5xl sm:text-6xl drop-shadow-sm">{icon}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
+      
+      const renderModal = () => {
+        if (!selectedCard) return null;
+        
+        // | 기호로 묶인 두 개의 base_topic 파싱
+        let base1 = { icon: '❔', label: '알 수 없음' };
+        let base2 = { icon: '❔', label: '알 수 없음' };
+        
+        if (selectedCard.base_topic) {
+          const parts = selectedCard.base_topic.split('|');
+          base1 = { icon: getIcon(parts[0]), label: parts[0] };
+          base2 = { icon: getIcon(parts[1] || parts[0]), label: parts[1] || parts[0] };
+        }
+
+        return (
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setSelectedCard(null)}>
+            <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl relative animate-fade-in flex flex-col max-h-[95vh]" onClick={e => e.stopPropagation()}>
+              <button onClick={() => setSelectedCard(null)} className="absolute top-6 right-8 text-4xl text-slate-400 hover:text-red-500 font-black transition-colors z-10">&times;</button>
+              
+              <div className="p-8 sm:p-10 border-b-4 border-slate-100 shrink-0">
+                <h2 className="text-3xl sm:text-4xl font-black text-slate-800 mb-2"><span className="text-green-600 break-keep">{selectedCard.user_name}</span>을(를) 위한 맞춤 처방전</h2>
+                <p className="text-lg sm:text-xl font-bold text-slate-500 mt-4 bg-slate-100 inline-block px-4 py-2 rounded-lg whitespace-nowrap shrink-0">👨‍⚕️ 담당 미디어 영양사: <span className="text-blue-600">{selectedCard.partner_name}</span></p>
+              </div>
+              
+              <div className="p-8 sm:p-10 space-y-6 overflow-y-auto bg-slate-50 rounded-b-3xl">
+                
+                {/* 완벽한 5구 식판 그래픽 복원 */}
+                <div className="bg-slate-400 p-4 sm:p-8 rounded-[2.5rem] w-full max-w-4xl mx-auto shadow-2xl mb-8">
+                  <div className="bg-slate-300 p-4 sm:p-6 rounded-[2rem] w-full flex flex-col gap-4 border-4 border-slate-400/50 shadow-inner">
+                    <div className="flex justify-center mb-2">
+                      <div className="bg-white px-8 py-3 rounded-full font-black text-slate-800 shadow-md border-2 border-slate-200 text-lg">
+                        <span className="text-green-600 break-keep">{selectedCard.user_name}</span>의 다양성 100% 식판
+                      </div>
+                    </div>
+                    
+                    {/* 상단 3구 (기존1 - 새영상1 - 기존2) */}
+                    <div className="flex justify-between gap-3 sm:gap-6 w-full">
+                      {[
+                        { icon: base1.icon, label: base1.label }, 
+                        { icon: getIcon(selectedCard.topic_1), label: selectedCard.topic_1 }, 
+                        { icon: base2.icon, label: base2.label }
+                      ].map((t, idx) => (
+                        <div key={idx} className={`bg-slate-50 border-4 border-white rounded-[1.5rem] w-1/3 aspect-square flex flex-col items-center justify-center p-2 shadow-[inset_0_4px_10px_rgba(0,0,0,0.05)]`}>
+                          <span className="text-5xl sm:text-6xl mb-2 sm:mb-4 drop-shadow-md">{t.icon}</span>
+                          <span className="bg-white border border-slate-200 rounded-full px-2 py-1 text-[10px] sm:text-sm font-bold text-slate-700 w-11/12 text-center truncate shadow-sm">{t.label}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* 하단 2구 (새영상2 - 새영상3) */}
+                    <div className="flex justify-between gap-3 sm:gap-6 w-full mt-2">
+                      {[
+                        { icon: getIcon(selectedCard.topic_2), label: selectedCard.topic_2 }, 
+                        { icon: getIcon(selectedCard.topic_3), label: selectedCard.topic_3 }
+                      ].map((t, idx) => (
+                        <div key={idx} className="bg-slate-50 border-4 border-white rounded-[2rem] w-1/2 aspect-[4/3] flex flex-col items-center justify-center p-4 shadow-[inset_0_4px_10px_rgba(0,0,0,0.05)]">
+                          <span className="text-7xl sm:text-8xl mb-3 sm:mb-6 drop-shadow-md">{t.icon}</span>
+                          <span className="bg-white border border-slate-200 rounded-full px-4 py-2 text-xs sm:text-base font-bold text-slate-700 w-10/12 text-center truncate shadow-sm">{t.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 p-6 rounded-2xl border-2 border-blue-100 shadow-sm">
+                  <p className="font-black text-blue-700 mb-3 text-2xl border-b-2 border-blue-200 pb-2">1️⃣ {selectedCard.topic_1}</p>
+                  <p className="text-slate-700 font-bold leading-relaxed whitespace-pre-wrap">{selectedCard.reason_1}</p>
+                </div>
+                <div className="bg-blue-50 p-6 rounded-2xl border-2 border-blue-100 shadow-sm">
+                  <p className="font-black text-blue-700 mb-3 text-2xl border-b-2 border-blue-200 pb-2">2️⃣ {selectedCard.topic_2}</p>
+                  <p className="text-slate-700 font-bold leading-relaxed whitespace-pre-wrap">{selectedCard.reason_2}</p>
+                </div>
+                <div className="bg-blue-50 p-6 rounded-2xl border-2 border-blue-100 shadow-sm">
+                  <p className="font-black text-blue-700 mb-3 text-2xl border-b-2 border-blue-200 pb-2">3️⃣ {selectedCard.topic_3}</p>
+                  <p className="text-slate-700 font-bold leading-relaxed whitespace-pre-wrap">{selectedCard.reason_3}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      return (
+        <div className="p-8 max-w-7xl mx-auto min-h-screen">
+          <div className="flex justify-between items-end mb-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <div>
+              <h1 className="text-4xl font-black text-slate-800 tracking-tight">👨‍🏫 실시간 미디어 식판 수집 현황</h1>
+              <p className="text-slate-500 font-bold mt-2">아이들이 전송하면 이곳에 자동으로 나타납니다. (수집량: <span className="text-blue-600 text-xl">{submissions.length}</span>개)</p>
+            </div>
+            <button onClick={fetchTrays} className="bg-slate-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition-colors shadow-md">🔄 수동 새로고침</button>
+          </div>
+
+          {errorMsg && (
+            <div className="bg-red-100 text-red-700 p-6 rounded-2xl border-4 border-red-400 font-bold mb-8 shadow-md">
+              🚨 에러 발생! Supabase SQL Editor에서 'alter table media_trays disable row level security;' 를 실행해주세요. <br/>({errorMsg})
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {submissions.map(sub => <Card key={sub.id} item={sub} />)}
+            {submissions.length === 0 && !errorMsg && (
+              <div className="col-span-full flex flex-col items-center justify-center py-32 text-slate-400">
+                <span className="text-6xl mb-4">📡</span>
+                <p className="font-bold text-2xl">학생들의 전송을 기다리는 중입니다...</p>
+              </div>
+            )}
+          </div>
+
+          {renderModal()}
+        </div>
+      );
+    }
+    const root = ReactDOM.createRoot(document.getElementById('root')); root.render(<Dashboard />);
+  </script>
+</body>
+</html>

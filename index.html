@@ -404,7 +404,7 @@
       const [clicks, setClicks] = useState(0);
       const [checked, setChecked] = useState(false);
       
-      const safePositions = [ {x: 20, y: 20}, {x: 70, y: 20}, {x: 20, y: 70}, {x: 70, y: 70}, {x: 45, y: 45}, {x: 10, y: 45}, {x: 80, y: 45}, {x: 45, y: 10}, {x: 45, y: 80}, {x: 15, y: 85}, {x: 85, y: 15}, {x: 85, y: 85}, {x: 15, y: 15} ];
+      const safePositions = [ {x: 20, y: 20}, {x: 70, y: 20}, {x: 20, y: 70}, {x: 70, y: 70}, {x: 45, y: 45}, {x: 10, y: 45}, {x: 80, y: 45}, {x: 45, y: 10}, {x: 45, y: 80}, {x: 15, y: 85}, {x: 85, y: 15}, {x: 85, y: 85}, {x: 15, y: 15}, {x: 30, y: 30}, {x: 60, y: 60}, {x: 30, y: 60}, {x: 60, y: 30}, {x: 50, y: 25}, {x: 25, y: 50}, {x: 75, y: 50}, {x: 50, y: 75}, {x: 10, y: 10}, {x: 90, y: 90}, {x: 10, y: 90}, {x: 90, y: 10}, {x: 40, y: 15}, {x: 60, y: 15}, {x: 15, y: 40}, {x: 15, y: 60}, {x: 85, y: 40} ];
 
       const handleSelect = (topic) => { 
         if(!inputName.trim()) { alert("이름을 먼저 적어주세요!"); return; } 
@@ -416,7 +416,7 @@
         }
       };
 
-      const handleFeed = () => { if(clicks < 5) setClicks(c => c + 1); };
+      const handleFeed = () => { if(clicks < 10) setClicks(c => c + 1); };
       const isSelectionComplete = baseTopics.length === 2;
       
       // 고르지 않은 나머지 주제들
@@ -463,12 +463,12 @@
             <div className="w-full flex flex-col items-center">
               <h2 className="text-3xl font-bold text-pink-600 bg-pink-100 px-8 py-4 rounded-full mb-4 shadow-sm">🫧 미션 3: 나의 필터 버블 체험</h2>
               <div className="relative w-full max-w-4xl bg-white rounded-[3rem] border-8 border-gray-200 h-[600px] flex flex-col items-center justify-center overflow-hidden shadow-2xl transition-all duration-700">
-                {/* 배경: 나머지 주제들이 점점 회색/흐려짐 */}
-                <div className="absolute inset-0 z-0 flex flex-wrap content-center justify-center" style={{ filter: `grayscale(${clicks * 20}%) blur(${clicks * 1.5}px)` }}>
-                  {otherTopics.slice(0, 25).map((t, i) => <span key={i} className="text-5xl m-4 opacity-80">{t.icon}</span>)}
+                {/* 배경: 나머지 주제들이 총출동하여 점점 회색/흐려짐 */}
+                <div className="absolute inset-0 z-0 flex flex-wrap content-center justify-center transition-all duration-700" style={{ filter: `grayscale(${clicks * 10}%) blur(${clicks * 0.8}px)` }}>
+                  {otherTopics.map((t, i) => <span key={i} className="text-4xl sm:text-5xl m-2 sm:m-3 opacity-70">{t.icon}</span>)}
                 </div>
                 {/* 점점 어두워지는 터널 효과 */}
-                <div className="absolute inset-0 z-10 pointer-events-none" style={{ background: `radial-gradient(circle, transparent 20%, rgba(0,0,0,${clicks * 0.18}) 100%)`, backdropFilter: `blur(${clicks * 0.5}px)` }}></div>
+                <div className="absolute inset-0 z-10 pointer-events-none transition-all duration-700" style={{ background: `radial-gradient(circle, transparent 20%, rgba(0,0,0,${clicks * 0.09}) 100%)`, backdropFilter: `blur(${clicks * 0.25}px)` }}></div>
                 
                 {/* 사용자 이름표 */}
                 <div className="absolute z-20 flex flex-col items-center justify-center px-10 py-4 bg-white/90 backdrop-blur-md rounded-full border-2 border-pink-200 shadow-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -476,7 +476,7 @@
                 </div>
                 
                 {/* 생성되는 버블 (선택한 2가지 주제가 번갈아 나타남) */}
-                {safePositions.slice(0, clicks * 4).map((pos, idx) => {
+                {safePositions.slice(0, clicks * 3).map((pos, idx) => {
                   const topic = baseTopics[idx % 2]; // 2개를 번갈아가며 띄움
                   return (
                     <div key={idx} className="absolute animate-pop flex flex-col items-center justify-center glass-bubble w-20 h-20 sm:w-24 sm:h-24 z-30 shadow-lg" style={{ left: `calc(${pos.x}% - 40px)`, top: `calc(${pos.y}% - 40px)` }}>
@@ -485,9 +485,9 @@
                   )
                 })}
                 
-                {clicks < 5 ? (
+                {clicks < 10 ? (
                   <button onClick={handleFeed} className="absolute bottom-8 z-40 bg-pink-500 hover:bg-pink-600 text-white font-black text-xl sm:text-2xl py-4 px-10 rounded-full shadow-xl border-b-8 border-pink-700 active:translate-y-2 active:border-b-0 transition-transform">
-                    ▶ 계속 시청하기 ({clicks}/5)
+                    ▶ 계속 시청하기 ({clicks}/10)
                   </button>
                 ) : (
                   <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm animate-pop">
@@ -629,7 +629,7 @@
             <div className="bg-white p-8 rounded-3xl shadow-xl border-4 border-teal-300 w-full text-center mb-6">
               <h3 className="text-2xl font-black mb-2"><span className="text-blue-600">미디어 영양사</span>로서 {userName}에게 차려줄 <span className="text-teal-600">새로운 반찬(영상) 3가지</span>를 고르세요!</h3>
               <p className="text-sm font-bold text-teal-500 mb-6">(선택된 개수: {partnerTopics.length} / 3)</p>
-              <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 gap-2 h-96 overflow-y-auto p-2 bg-gray-50 border-2 border-gray-100 rounded-xl">
+              <div className="flex flex-wrap justify-center content-start gap-3 h-96 overflow-y-auto p-4 bg-gray-50 border-2 border-gray-100 rounded-xl mx-auto w-full">
                 {availableTopics.map(topic => {
                   const isSel = partnerTopics.find(t=>t.id===topic.id);
                   return (
@@ -651,7 +651,7 @@
         return (
           <div className="w-full max-w-4xl flex flex-col items-center p-6 animate-pop mx-auto">
             
-            {/* 🔥 5구 식판 그래픽 (상단 좌우: 기존 2개, 나머지 3개: 짝꿍 추천) */}
+            {/* 🔥 5구 식판 그래픽 (상단 3구: 짝꿍 추천, 하단 2구: 기존 취향) */}
             <div className="bg-slate-400 p-4 sm:p-8 rounded-[2.5rem] w-full mx-auto shadow-2xl mb-8">
               <div className="bg-slate-300 p-4 sm:p-6 rounded-[2rem] w-full flex flex-col gap-4 border-4 border-slate-400/50 shadow-inner">
                 <div className="flex justify-center mb-2">
@@ -660,21 +660,23 @@
                   </div>
                 </div>
                 
-                {/* 상단 3구 (기존1 - 새영상1 - 기존2) */}
+                {/* 상단 3구 (새로운 추천 반찬 3개) */}
                 <div className="flex justify-between gap-3 sm:gap-6 w-full">
-                  {[baseTopics[0], partnerTopics[0], baseTopics[1]].map((t, idx) => (
-                    <div key={idx} className="bg-slate-50 border-4 border-white rounded-[1.5rem] w-1/3 aspect-square flex flex-col items-center justify-center p-2 shadow-[inset_0_4px_10px_rgba(0,0,0,0.05)]">
-                      <span className="text-5xl sm:text-6xl mb-2 sm:mb-4 drop-shadow-md">{t && t.icon}</span>
-                      <span className="bg-white border border-slate-200 rounded-full px-2 py-1 text-[10px] sm:text-sm font-bold text-slate-700 w-11/12 text-center truncate shadow-sm">{t && t.label}</span>
+                  {[partnerTopics[0], partnerTopics[1], partnerTopics[2]].map((t, idx) => (
+                    <div key={idx} className="bg-green-50 border-4 border-green-200 rounded-[1.5rem] w-1/3 aspect-square flex flex-col items-center justify-center p-2 shadow-[inset_0_4px_10px_rgba(0,0,0,0.05)] relative">
+                      <span className="absolute -top-3 bg-green-500 text-white text-[10px] sm:text-xs font-black px-2 py-1 rounded-full shadow-md z-10 whitespace-nowrap">✨ 친구의 추천</span>
+                      <span className="text-5xl sm:text-6xl mb-2 sm:mb-4 drop-shadow-md mt-2">{t && t.icon}</span>
+                      <span className="bg-white border border-green-200 rounded-full px-2 py-1 text-[10px] sm:text-sm font-bold text-green-700 w-11/12 text-center truncate shadow-sm">{t && t.label}</span>
                     </div>
                   ))}
                 </div>
                 
-                {/* 하단 2구 (새영상2 - 새영상3) */}
+                {/* 하단 2구 (원래 취향 2개) */}
                 <div className="flex justify-between gap-3 sm:gap-6 w-full mt-2">
-                  {[partnerTopics[1], partnerTopics[2]].map((t, idx) => (
-                    <div key={idx} className="bg-slate-50 border-4 border-white rounded-[2rem] w-1/2 aspect-[4/3] flex flex-col items-center justify-center p-4 shadow-[inset_0_4px_10px_rgba(0,0,0,0.05)]">
-                      <span className="text-7xl sm:text-8xl mb-3 sm:mb-6 drop-shadow-md">{t && t.icon}</span>
+                  {[baseTopics[0], baseTopics[1]].map((t, idx) => (
+                    <div key={idx} className="bg-slate-100 border-4 border-slate-200 rounded-[2rem] w-1/2 aspect-[4/3] flex flex-col items-center justify-center p-4 shadow-[inset_0_4px_10px_rgba(0,0,0,0.05)] relative">
+                      <span className="absolute -top-3 bg-slate-500 text-white text-[10px] sm:text-xs font-black px-3 py-1 rounded-full shadow-md z-10 whitespace-nowrap">🍚 원래 내 취향</span>
+                      <span className="text-7xl sm:text-8xl mb-3 sm:mb-6 drop-shadow-md mt-2">{t && t.icon}</span>
                       <span className="bg-white border border-slate-200 rounded-full px-4 py-2 text-xs sm:text-base font-bold text-slate-700 w-10/12 text-center truncate shadow-sm">{t && t.label}</span>
                     </div>
                   ))}

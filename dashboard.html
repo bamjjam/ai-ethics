@@ -13,12 +13,14 @@
   <link href="https://cdn.jsdelivr.net/gh/toss/tossface/dist/tossface.css" rel="stylesheet" type="text/css" />
   
   <style>
-    body { font-family: 'Tossface', sans-serif; }
+    /* 모든 글씨체 1순위를 강제로 토스페이스로 지정 (!important) */
+    * { font-family: 'Tossface', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif !important; }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
   </style>
 </head>
-<body class="bg-slate-100 font-sans text-gray-800">
+<!-- 기존에 있던 font-sans 속성 삭제 -->
+<body class="bg-slate-100 text-gray-800">
   <div id="root"></div>
 
   <script type="text/babel">

@@ -9,12 +9,18 @@
   <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
-  <!-- 토스(Toss)에서 만든 귀여운 이모지 웹 폰트 불러오기 -->
-  <link href="https://cdn.jsdelivr.net/gh/toss/tossface/dist/tossface.css" rel="stylesheet" type="text/css" />
-  
   <style>
-    /* 모든 글씨체 1순위를 강제로 토스페이스로 지정 (!important) */
-    * { font-family: 'Tossface', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif !important; }
+    /* 토스 이모지 폰트를 '이모지'에만 적용하도록 특수 설정 (숫자/글자 깨짐 방지) */
+    @font-face {
+      font-family: 'TossfaceEmoji';
+      src: url('https://cdn.jsdelivr.net/gh/toss/tossface/dist/tossface.woff2') format('woff2');
+      unicode-range: U+200D, U+FE0F, U+2300-2BFF, U+1F000-1FAFF;
+    }
+    
+    * { 
+      font-family: 'TossfaceEmoji', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif !important; 
+    }
+    
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
   </style>

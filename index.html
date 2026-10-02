@@ -92,11 +92,11 @@
       }
 
       return (
-        <div className="flex flex-col items-center gap-3 w-full max-w-md mx-auto bg-white p-6 rounded-2xl border-4 border-blue-400 mt-4 shadow-xl animate-pop">
-          <p className="font-bold text-blue-700 text-lg flex items-center gap-2"><span className="text-2xl">🔒</span> 암호 입력</p>
-          <div className="flex gap-2 w-full mt-2">
-            <input type="password" value={pwd} onChange={e => setPwd(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleUnlock()} placeholder="영타 입력" className="flex-1 border-2 border-gray-300 rounded-xl px-4 py-3 font-bold focus:outline-none focus:border-blue-500 text-center text-xl tracking-widest" />
-            <button onClick={handleUnlock} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl shadow-md shrink-0">확인</button>
+        <div className="flex flex-col items-center gap-3 w-full max-w-full sm:max-w-md mx-auto bg-white p-4 sm:p-6 rounded-2xl border-4 border-blue-400 mt-4 shadow-xl animate-pop box-border">
+          <p className="font-bold text-blue-700 text-lg flex items-center gap-2 break-keep"><span className="text-2xl">🔒</span> 암호 입력</p>
+          <div className="flex gap-2 w-full mt-2 box-border">
+            <input type="password" value={pwd} onChange={e => setPwd(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleUnlock()} placeholder="영타 입력" className="flex-1 min-w-0 border-2 border-gray-300 rounded-xl px-2 sm:px-4 py-3 font-bold focus:outline-none focus:border-blue-500 text-center text-lg sm:text-xl tracking-widest box-border" />
+            <button onClick={handleUnlock} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 sm:px-6 rounded-xl shadow-md shrink-0 box-border">확인</button>
           </div>
         </div>
       );
@@ -586,7 +586,7 @@
             </div>
             <div className="relative w-full max-w-4xl bg-white rounded-[3rem] border-8 border-gray-200 h-[600px] overflow-hidden shadow-2xl transition-all duration-300">
               <div className="absolute inset-0 z-0 flex flex-wrap content-center justify-center transition-all duration-300" style={{ filter: `grayscale(${darkLevel * 100}%) blur(${darkLevel * 8}px)` }}>
-                {availableTopics.slice(0, 25).map((t, i) => <span key={i} className="text-5xl m-4" style={{opacity: 1}}>{t.icon}</span>)}
+                {availableTopics.map((t, i) => <span key={i} className="text-4xl sm:text-5xl m-2 sm:m-4" style={{opacity: 1}}>{t.icon}</span>)}
               </div>
               <div className="absolute inset-0 z-10 pointer-events-none transition-all duration-300" style={{ background: `radial-gradient(circle, transparent 20%, rgba(0,0,0,${darkLevel * 0.9}) 100%)`, backdropFilter: `blur(${darkLevel * 3}px)` }}></div>
               <div className="absolute z-20 flex flex-col items-center justify-center px-10 py-4 bg-white/90 backdrop-blur-md rounded-full border-2 border-pink-200 shadow-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
@@ -625,7 +625,7 @@
 
       if (stage === 'select') {
         return (
-          <div className="w-full max-w-5xl animate-pop flex flex-col items-center p-6">
+          <div className="w-full max-w-5xl mx-auto animate-pop flex flex-col items-center p-6">
             <div className="bg-white p-8 rounded-3xl shadow-xl border-4 border-teal-300 w-full text-center mb-6">
               <h3 className="text-2xl font-black mb-2"><span className="text-blue-600">미디어 영양사</span>로서 {userName}에게 차려줄 <span className="text-teal-600">새로운 반찬(영상) 3가지</span>를 고르세요!</h3>
               <p className="text-sm font-bold text-teal-500 mb-6">(선택된 개수: {partnerTopics.length} / 3)</p>

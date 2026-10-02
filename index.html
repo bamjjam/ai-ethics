@@ -2,29 +2,39 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>👨‍🏫 교사 대시보드 - 알고리즘 윤리</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📱 알고리즘 윤리 - 학생용</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
-  <!-- 토스(Toss)에서 만든 귀여운 이모지 웹 폰트 불러오기 -->
+  <!-- 토스(Toss) 이모지 웹 폰트 -->
   <link href="https://cdn.jsdelivr.net/gh/toss/tossface/dist/tossface.css" rel="stylesheet" type="text/css" />
   
   <style>
-    /* 모든 글씨체 1순위를 강제로 토스페이스로 지정 (!important) */
+    /* 모든 폰트를 강제로 토스 이모지 폰트로 지정하여 윈도우 흑백 이모지 오류 원천 차단 */
     * { font-family: 'Tossface', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif !important; }
-    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    
+    @keyframes pulse-slow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(0.95); } }
+    .animate-pulse-slow { animation: pulse-slow 3s infinite; }
+    
+    @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-20px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+    
+    @keyframes scan { 0% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+    .scan-line { position: absolute; left: 0; right: 0; height: 4px; background: rgba(59, 130, 246, 0.5); box-shadow: 0 0 10px rgba(59, 130, 246, 0.8); animation: scan 2s linear infinite; }
   </style>
 </head>
-<!-- 기존에 있던 font-sans 속성 삭제 -->
 <body class="bg-slate-100 text-gray-800">
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
 
     const SUPABASE_URL = 'https://plsdgoibpfjuvdtjvffb.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_oXlE7oQpWNxRzCHwXdp7Vw_EnDwLXpL';
@@ -43,7 +53,431 @@
       { id: 19, icon: '👻', label: '오싹한 미스터리' }, { id: 20, icon: '📹', label: '유튜버 브이로그' },
       { id: 21, icon: '🦖', label: '공룡의 세계' }, { id: 22, icon: '🐹', label: '귀여운 햄스터' },
       { id: 23, icon: '💅', label: '화려한 네일아트' }, { id: 24, icon: '🎪', label: '서커스 묘기' },
-      { id: 25, icon: '🎧', label: '수면 ASMR' }, { id: 26, icon: '⚽️', label: '축구 하이라이트' },
-      { id: 27, icon: '⚾️', label: '야구 명장면' }, { id: 28, icon: '🏕️', label: '감성 캠핑' },
+      { id: 25, icon: '🎧', label: '수면 ASMR' }, { id: 26, icon: '⚽', label: '축구 하이라이트' },
+      { id: 27, icon: '⚾', label: '야구 명장면' }, { id: 28, icon: '🏕️', label: '감성 캠핑' },
       { id: 29, icon: '🥋', label: '태권도 격파' }, { id: 30, icon: '🦈', label: '심해 상어 탐험' },
-      { id: 31, icon: '👗', label: '패션 코디' }, { id: 32, icon: '🛹', label
+      { id: 31, icon: '👗', label: '패션 코디' }, { id: 32, icon: '🛹', label: '스케이트보드 묘기' },
+      { id: 33, icon: '🍰', label: '디저트 만들기' }, { id: 34, icon: '🎹', label: '피아노 연주' },
+      { id: 35, icon: '✈️', label: '세계 여행' }, { id: 36, icon: '🐬', label: '돌고래 쇼' },
+      { id: 37, icon: '🚴', label: '자전거 라이딩' }, { id: 38, icon: '🎭', label: '상황극 꽁트' },
+      { id: 39, icon: '📚', label: '흥미진진 역사' }, { id: 40, icon: '🐠', label: '아름다운 수족관' }
+    ];
+
+    const scenarios = [
+      { log: "민수가 '마인크래프트 집 짓기' 영상 썸네일에 마우스를 올리고 3초 동안 멈춰서 살펴봤습니다. (클릭은 안 함)", options: ["마인크래프트에 관심이 있군! 1점 추가", "클릭 안 했으니 관심 없군. 0점", "잘못 올린 거겠지. 무시하자."], answer: 0, explanation: "알고리즘은 마우스를 올리고 머문 시간(체류 시간)도 관심도로 측정합니다!", item: {icon: "🎮", label: "게임 마니아"} },
+      { log: "민수가 '신나는 댄스곡 모음' 영상을 클릭했지만, 5초 만에 다른 영상으로 넘어갔습니다.", options: ["노래가 마음에 쏙 들었나 보네!", "음악에 관심이 없거나 지금 듣기 싫은가 보군. 점수 깎기!", "일단 눌렀으니까 음악 좋아하는 사람으로 분류!"], answer: 1, explanation: "클릭했더라도 금방 나가버리면(시청 지속 시간 하락), 알고리즘은 '관심 없음'으로 판단합니다.", item: {icon: "🎧", label: "노동요 마니아"} },
+      { log: "민수가 밤 10시에 '귀여운 고양이 목욕하기' 영상을 끝까지 시청하고 '좋아요'를 눌렀습니다.", options: ["밤이니까 무서운 영상 추천해야지", "강아지 영상을 좋아하겠군", "밤에 동물 영상을 끝까지 보는 '고양이 집사'로 프로필 업데이트! 최고 점수 부여!"], answer: 2, explanation: "끝까지 시청(완주율)하고 '좋아요'까지 누르는 것은 알고리즘이 가장 사랑하는 확실한 선호 데이터입니다.", item: {icon: "🐱", label: "고양이 집사"} },
+      { log: "민수가 '액체괴물 만들기 꿀팁' 영상을 친구에게 카카오톡 링크로 공유했습니다.", options: ["공유했으니 엄청난 찐팬이군! 액체괴물 영상 무한 추천!", "나갔으니까 액체괴물 싫어하는구나", "친구랑 연락하는 걸 좋아하네"], answer: 0, explanation: "외부로 공유(Share)하는 행동은 그 주제에 대한 엄청난 충성도로 계산되어 추천 점수가 폭발적으로 오릅니다.", item: {icon: "💧", label: "액괴 찐팬"} },
+      { log: "민수가 검색창에 '숙제 빨리 하는 법'을 쳤다가 영상은 안 보고 그냥 나갔습니다.", options: ["숙제를 좋아하니까 '공부의 신' 영상 추천!", "공부하기 싫어하는 학생이군. 재밌는 게임 영상으로 꼬셔야지!", "검색만 했으니 아무 의미 없다."], answer: 1, explanation: "검색어조차도 프로파일링의 단서가 됩니다. 학습 목적보다 오락을 원한다고 판단할 확률이 높습니다.", item: {icon: "💤", label: "공부 기피자"} },
+      { log: "주말 아침, 민수가 켜놓은 '로블록스 꿀잼 탈출' 영상이 끝나고 다음 게임 영상이 '자동 재생'되고 있습니다.", options: ["자동 재생은 무효 처리해야지", "주말 아침에는 항상 게임 영상을 연달아 보는 '게임 마니아'로 분석 완료!", "아침이니까 요리 영상을 추천해야지"], answer: 1, explanation: "아무것도 안 하고 가만히 놔둬도(자동 재생), 알고리즘은 당신의 시간과 요일 패턴까지 완벽하게 데이터로 저장합니다.", item: {icon: "🍗", label: "야간 먹방러"} }
+    ];
+
+    function App() {
+      const [step, setStep] = useState(1);
+      
+      // Step 2 State (Montage)
+      const [scenarioIdx, setScenarioIdx] = useState(0);
+      const [showOptions, setShowOptions] = useState(false);
+      const [isScanning, setIsScanning] = useState(false);
+      const [typedText, setTypedText] = useState("");
+      const [selectedOption, setSelectedOption] = useState(null);
+      const [montageItems, setMontageItems] = useState([]);
+      
+      // Step 3 & 4 State (Bubble & Form)
+      const [selectedTopics, setSelectedTopics] = useState([]);
+      const [clickCount, setClickCount] = useState(0);
+      const [password, setPassword] = useState("");
+      const [partnerName, setPartnerName] = useState("");
+      const [newTopics, setNewTopics] = useState(["", "", ""]);
+      const [reasons, setReasons] = useState(["", "", ""]);
+      const [isSubmitting, setIsSubmitting] = useState(false);
+
+      // Typing Effect for Mission 2
+      useEffect(() => {
+        if (step === 2 && scenarioIdx < scenarios.length && !isScanning && !showOptions && !selectedOption) {
+          const text = scenarios[scenarioIdx].log;
+          let i = 0;
+          setTypedText("");
+          const interval = setInterval(() => {
+            setTypedText(prev => prev + text.charAt(i));
+            i++;
+            if (i >= text.length - 1) {
+              clearInterval(interval);
+            }
+          }, 40);
+          return () => clearInterval(interval);
+        }
+      }, [step, scenarioIdx, isScanning, showOptions, selectedOption]);
+
+      if (step === 1) {
+        return (
+          <div className="flex flex-col items-center justify-center min-h-screen p-4">
+            <div className="bg-white p-10 rounded-3xl shadow-xl w-full max-w-md text-center border-4 border-slate-100 animate-fade-in">
+              <div className="text-6xl mb-6 animate-float">🕵️‍♂️</div>
+              <h1 className="text-3xl font-black text-slate-800 mb-2 break-keep">탐정단 미션 1 완료!</h1>
+              <p className="text-slate-500 font-bold mb-8 break-keep">패들렛에 추리 결과를 모두 올렸나요?<br/>선생님이 알려주신 다음 암호를 입력하세요.</p>
+              
+              <input 
+                type="password" 
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="암호 입력"
+                className="w-full text-center text-2xl p-4 border-4 border-slate-200 rounded-2xl mb-6 font-black text-slate-700 tracking-widest focus:border-blue-500 focus:outline-none transition-colors"
+              />
+              
+              <button 
+                onClick={() => {
+                  if(password === "dkf") { setStep(2); setPassword(""); }
+                  else alert("❌ 암호가 틀렸습니다!");
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black text-xl py-4 rounded-2xl shadow-[0_6px_0_rgb(37,99,235)] active:shadow-[0_0px_0_rgb(37,99,235)] active:translate-y-[6px] transition-all"
+              >
+                행동 추적 알고리즘 접속하기
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      if (step === 2) {
+        if (scenarioIdx >= scenarios.length) {
+          return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-slate-100">
+              <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col md:flex-row gap-10">
+                <div className="flex-1">
+                  <div className="text-sm font-black text-slate-400 mb-2 flex items-center gap-2 border-b-2 pb-2"><span className="text-xl">📡</span> 행동 추적 알고리즘</div>
+                  <div className="text-center mt-12 animate-fade-in">
+                    <h2 className="text-5xl font-black text-blue-600 mb-6 drop-shadow-sm">완료</h2>
+                    <p className="text-2xl font-black text-slate-800 mb-4">프로파일링 완료!</p>
+                    <p className="text-lg text-slate-600 font-bold mb-8 break-keep leading-relaxed">
+                      무심코 한 작은 행동들이 모여<br/>민수보다 민수를 더 잘 아는 몽타주가 만들어졌습니다.
+                    </p>
+                    <div className="bg-red-50 border-2 border-red-200 p-6 rounded-2xl max-w-md mx-auto mb-8 shadow-sm">
+                      <p className="text-red-600 font-black text-lg mb-4 break-keep">
+                        이제 행동 추적 알고리즘은 몽타주에 맞춰<br/>비슷한 영상만 무한히 쏟아낼 것입니다!
+                      </p>
+                      <button onClick={() => setStep(3)} className="bg-white border-2 border-slate-200 text-slate-700 px-6 py-4 rounded-xl font-black hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all shadow-sm w-full break-keep text-lg">
+                        비슷한 영상만 계속 보면 어떻게 되는지 확인하기
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 몽타주 결과 아바타 */}
+                <div className="w-full md:w-80 bg-slate-900 rounded-3xl p-6 relative overflow-hidden flex flex-col items-center justify-center border-4 border-slate-800 shadow-inner min-h-[400px]">
+                  <div className="absolute inset-0" style={{backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)', backgroundSize: '20px 20px'}}></div>
+                  <div className="text-blue-400 font-black tracking-widest text-sm absolute top-6 z-10 flex items-center gap-2 drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]"><span className="text-xl">🤖</span> DIGITAL PROFILING</div>
+                  <div className="relative z-10 flex items-center justify-center mt-8">
+                    <div className="w-32 h-32 rounded-full border-2 border-blue-500/30 flex items-center justify-center absolute animate-pulse-slow"></div>
+                    <div className="w-48 h-48 rounded-full border border-blue-500/10 flex items-center justify-center absolute"></div>
+                    <div className="text-[100px] text-blue-500 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]">👤</div>
+                    
+                    {/* 부착된 라벨들 */}
+                    {montageItems.map((item, idx) => (
+                      <div key={idx} className="absolute animate-fade-in bg-slate-800/80 backdrop-blur-sm border border-blue-400/50 text-blue-100 px-3 py-1.5 rounded-lg text-xs font-bold shadow-[0_0_10px_rgba(96,165,250,0.3)] flex items-center gap-1.5 whitespace-nowrap break-keep" 
+                           style={{ 
+                             top: `${20 + (idx % 3) * 30}%`, 
+                             left: idx % 2 === 0 ? '-60%' : '110%',
+                             transform: `rotate(${idx % 2 === 0 ? -5 : 5}deg)`
+                           }}>
+                        <span className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_5px_#4ade80]"></span> {item.icon} {item.label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        const currentScenario = scenarios[scenarioIdx];
+
+        return (
+          <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-slate-100">
+            <div className="bg-white p-6 md:p-10 rounded-3xl shadow-2xl w-full max-w-4xl flex flex-col md:flex-row gap-8">
+              
+              {/* 왼쪽: 상황판 */}
+              <div className="flex-1 flex flex-col">
+                <div className="text-sm font-black text-slate-400 mb-4 flex items-center gap-2 border-b-2 pb-2"><span className="text-xl">📡</span> 행동 추적 알고리즘</div>
+                
+                <div className="bg-slate-900 text-green-400 p-6 rounded-2xl font-mono text-sm md:text-base leading-relaxed h-48 shadow-inner border-2 border-slate-800 mb-6 relative overflow-hidden break-keep">
+                  {isScanning && <div className="scan-line"></div>}
+                  <p className="text-slate-400 mb-2 font-bold">[System] 새로운 행동 데이터 포착!</p>
+                  <p>{typedText}</p>
+                </div>
+
+                {!isScanning && !showOptions && typedText.length >= currentScenario.log.length && (
+                  <button onClick={() => { setIsScanning(true); setTimeout(() => { setIsScanning(false); setShowOptions(true); }, 1500); }} className="bg-blue-500 hover:bg-blue-600 text-white font-black py-4 px-6 rounded-2xl shadow-[0_6px_0_rgb(37,99,235)] active:translate-y-[6px] active:shadow-none transition-all flex items-center justify-center gap-2 text-lg w-fit mx-auto">
+                    🔍 알고리즘 스캔 시작!
+                  </button>
+                )}
+
+                {isScanning && (
+                  <div className="text-center font-black text-blue-600 animate-pulse text-lg py-4">알고리즘이 민수의 의도를 분석 중입니다...</div>
+                )}
+
+                {showOptions && !selectedOption && (
+                  <div className="space-y-3 animate-fade-in flex-1 flex flex-col justify-end">
+                    <p className="font-black text-slate-700 mb-2 break-keep">💡 알고리즘이라면 이 데이터를 어떻게 점수로 계산할까요?</p>
+                    {currentScenario.options.map((opt, idx) => (
+                      <button key={idx} onClick={() => setSelectedOption({idx, isCorrect: idx === currentScenario.answer})} className="w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 font-bold text-slate-700 transition-all break-keep leading-snug">
+                        {idx + 1}. {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {selectedOption && (
+                  <div className={`p-5 rounded-2xl border-2 animate-fade-in flex-1 flex flex-col justify-between ${selectedOption.isCorrect ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-3xl">{selectedOption.isCorrect ? '🎯' : '❌'}</span>
+                        <h3 className={`text-xl font-black break-keep ${selectedOption.isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                          {selectedOption.isCorrect ? '알고리즘 분석 일치!' : '알고리즘은 그렇게 생각하지 않아요!'}
+                        </h3>
+                      </div>
+                      <p className="text-slate-700 font-bold leading-relaxed break-keep">{currentScenario.explanation}</p>
+                    </div>
+                    <button onClick={() => {
+                        if (selectedOption.isCorrect) setMontageItems([...montageItems, currentScenario.item]);
+                        setShowOptions(false); setSelectedOption(null); setTypedText("");
+                        setScenarioIdx(prev => prev + 1);
+                      }}
+                      className={`mt-6 py-3 px-6 rounded-xl font-black text-white w-full shadow-md transition-transform hover:scale-[1.02] ${selectedOption.isCorrect ? 'bg-green-600' : 'bg-red-600'}`}>
+                      다음 데이터 분석하기 ➡️
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* 오른쪽: 몽타주 스크린 */}
+              <div className="w-full md:w-80 bg-slate-900 rounded-3xl p-6 relative overflow-hidden flex flex-col items-center justify-center border-4 border-slate-800 shadow-inner min-h-[350px]">
+                <div className="absolute inset-0" style={{backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)', backgroundSize: '20px 20px'}}></div>
+                <div className="text-blue-400 font-black tracking-widest text-sm absolute top-6 z-10 flex items-center gap-2 drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]"><span className="text-xl">🤖</span> DIGITAL PROFILING</div>
+                
+                <div className="relative z-10 flex items-center justify-center mt-8">
+                  <div className="w-32 h-32 rounded-full border-2 border-blue-500/30 flex items-center justify-center absolute animate-pulse-slow"></div>
+                  <div className="text-[100px] text-blue-500 drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]">👤</div>
+                  
+                  {/* 부착된 라벨들 */}
+                  {montageItems.map((item, idx) => (
+                    <div key={idx} className="absolute animate-fade-in bg-slate-800/80 backdrop-blur-sm border border-blue-400/50 text-blue-100 px-3 py-1.5 rounded-lg text-xs font-bold shadow-[0_0_10px_rgba(96,165,250,0.3)] flex items-center gap-1.5 whitespace-nowrap break-keep" 
+                         style={{ 
+                           top: `${20 + (idx % 3) * 30}%`, 
+                           left: idx % 2 === 0 ? '-60%' : '110%',
+                           transform: `rotate(${idx % 2 === 0 ? -5 : 5}deg)`
+                         }}>
+                      <span className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_5px_#4ade80]"></span> {item.icon} {item.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        );
+      }
+
+      if (step === 3) {
+        const isTrapped = clickCount >= 10;
+        const bgTopics = allTopics.filter(t => !selectedTopics.includes(t.label));
+        const activeTopic1 = allTopics.find(t => t.label === selectedTopics[0]);
+        const activeTopic2 = allTopics.find(t => t.label === selectedTopics[1]);
+
+        return (
+          <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center bg-white transition-colors duration-1000" style={{ backgroundColor: isTrapped ? '#0f172a' : 'white' }}>
+            {/* 배경 주제들 (가장자리 꽉 채우기) */}
+            {bgTopics.map((topic, i) => (
+              <div key={i} className="absolute text-3xl opacity-30 transition-all duration-1000"
+                style={{
+                  top: `${(i * 7) % 95}%`,
+                  left: `${(i * 13) % 95}%`,
+                  filter: isTrapped ? 'grayscale(100%) opacity(0.1) blur(4px)' : 'none',
+                  transform: `rotate(${i * 15}deg)`
+                }}>
+                {topic.icon}
+              </div>
+            ))}
+
+            {/* 필터버블 UI */}
+            <div className={`relative z-10 transition-all duration-1000 flex flex-col items-center justify-center ${isTrapped ? 'scale-110' : 'scale-100'}`}>
+              <div className="absolute w-[400px] h-[400px] rounded-full border-4 transition-all duration-1000"
+                style={{
+                  borderColor: isTrapped ? 'rgba(59, 130, 246, 0.8)' : 'transparent',
+                  background: isTrapped ? 'radial-gradient(circle, rgba(59,130,246,0.1) 0%, rgba(15,23,42,0.8) 100%)' : 'transparent',
+                  boxShadow: isTrapped ? '0 0 50px rgba(59, 130, 246, 0.5), inset 0 0 30px rgba(59, 130, 246, 0.5)' : 'none'
+                }}>
+              </div>
+
+              {!isTrapped ? (
+                <div className="bg-white/90 backdrop-blur p-8 rounded-3xl shadow-xl max-w-md w-full text-center z-20 border-2 border-slate-100">
+                  <h2 className="text-2xl font-black mb-6 text-slate-800 break-keep">내가 가장 좋아하는 주제<br/>2가지를 고르세요!</h2>
+                  {selectedTopics.length < 2 ? (
+                    <div className="h-[400px] overflow-y-auto grid grid-cols-2 gap-3 pr-2 custom-scrollbar">
+                      {allTopics.map(topic => (
+                        <button key={topic.id} onClick={() => setSelectedTopics([...selectedTopics, topic.label])} className="p-3 border-2 border-slate-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center gap-2">
+                          <span className="text-4xl">{topic.icon}</span>
+                          <span className="text-xs font-bold text-slate-600 break-keep">{topic.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="animate-fade-in">
+                      <p className="text-lg font-bold text-slate-600 mb-6 break-keep">선택한 주제의 영상을<br/>계속 터치해서 시청하세요! ({clickCount}/10)</p>
+                      <div className="flex gap-4 justify-center mb-6">
+                        <button onClick={() => setClickCount(c => c + 1)} className="text-6xl hover:scale-110 active:scale-95 transition-transform bg-slate-50 p-6 rounded-3xl border-4 border-slate-200 shadow-sm">
+                          {activeTopic1.icon}
+                        </button>
+                        <button onClick={() => setClickCount(c => c + 1)} className="text-6xl hover:scale-110 active:scale-95 transition-transform bg-slate-50 p-6 rounded-3xl border-4 border-slate-200 shadow-sm">
+                          {activeTopic2.icon}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="z-20 text-center animate-fade-in p-8">
+                  <div className="flex justify-center gap-4 mb-4">
+                    <span className="text-7xl drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] animate-float" style={{animationDelay: '0s'}}>{activeTopic1.icon}</span>
+                    <span className="text-7xl drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] animate-float" style={{animationDelay: '1s'}}>{activeTopic2.icon}</span>
+                  </div>
+                  <h1 className="text-4xl font-black text-white mb-4 drop-shadow-md break-keep">필터 버블에 갇혔습니다!</h1>
+                  <p className="text-blue-200 font-bold mb-8 text-lg break-keep leading-relaxed">
+                    선호하는 정보만 계속 선택하다 보니,<br/>세상의 다른 유익한 정보들은 흑백으로 흐려지고<br/>나만의 좁은 방울(버블)에 갇히게 되었습니다.
+                  </p>
+                  
+                  <div className="bg-slate-800/80 p-6 rounded-2xl border border-slate-600 backdrop-blur-md">
+                    <p className="text-yellow-300 font-black mb-4 break-keep">🚨 짝꿍과 태블릿을 바꾸고, 짝꿍을 구출하세요!</p>
+                    <input 
+                      type="password" 
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="구출 암호 입력"
+                      className="w-full max-w-[200px] box-border text-center text-xl p-4 border-2 border-slate-600 rounded-xl mb-4 font-black bg-slate-900 text-white focus:border-blue-500 focus:outline-none"
+                    />
+                    <button 
+                      onClick={() => {
+                        if(password === "fl") { setStep(4); setPassword(""); }
+                        else alert("❌ 암호가 틀렸습니다!");
+                      }}
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-black py-4 rounded-xl transition-colors text-lg"
+                    >
+                      버블 터뜨리기! 💥
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      if (step === 4) {
+        const handleNewTopicChange = (index, value) => {
+          const arr = [...newTopics]; arr[index] = value; setNewTopics(arr);
+        };
+        const handleReasonChange = (index, value) => {
+          const arr = [...reasons]; arr[index] = value; setReasons(arr);
+        };
+
+        const submitTray = async () => {
+          if (!partnerName || newTopics.some(t => !t) || reasons.some(r => !r)) {
+            alert("모든 칸을 꼼꼼하게 채워주세요!"); return;
+          }
+          if (window.confirm("식판을 선생님 대시보드로 전송할까요?")) {
+            setIsSubmitting(true);
+            try {
+              const baseTopicString = selectedTopics.join('|'); // 두 개의 기존 주제 묶어서 전송
+              const { error } = await supabase.from('media_trays').insert([{
+                user_name: '짝꿍',
+                partner_name: partnerName,
+                base_topic: baseTopicString,
+                topic_1: newTopics[0], reason_1: reasons[0],
+                topic_2: newTopics[1], reason_2: reasons[1],
+                topic_3: newTopics[2], reason_3: reasons[2]
+              }]);
+              if (error) throw error;
+              alert("전송 완료! 선생님 화면을 확인하세요.");
+              window.location.reload();
+            } catch (err) {
+              alert("에러가 발생했습니다: " + err.message);
+              setIsSubmitting(false);
+            }
+          }
+        };
+
+        const activeTopic1 = allTopics.find(t => t.label === selectedTopics[0]) || {icon:'❔'};
+        const activeTopic2 = allTopics.find(t => t.label === selectedTopics[1]) || {icon:'❔'};
+
+        return (
+          <div className="min-h-screen bg-slate-50 p-4 sm:p-8 relative overflow-hidden flex flex-col items-center">
+            {/* 꽉 찬 배경 주제들 */}
+            {allTopics.filter(t => !selectedTopics.includes(t.label)).map((topic, i) => (
+              <div key={i} className="absolute text-4xl opacity-20"
+                style={{ top: `${(i * 7) % 95}%`, left: `${(i * 13) % 95}%`, transform: `rotate(${i * 15}deg)` }}>
+                {topic.icon}
+              </div>
+            ))}
+
+            <div className="max-w-4xl mx-auto w-full flex flex-col gap-8 relative z-10 animate-fade-in">
+              <div className="bg-white p-6 md:p-8 rounded-3xl shadow-lg border-2 border-slate-200 text-center mx-auto w-full">
+                <h1 className="text-3xl font-black text-slate-800 mb-2 break-keep">👨‍⚕️ 일일 미디어 영양사 활동</h1>
+                <p className="text-slate-500 font-bold break-keep">짝꿍의 시야를 넓혀줄 새롭고 건강한 주제 3가지를 골라 처방전을 완성하세요!</p>
+                <div className="mt-6">
+                  <input type="text" value={partnerName} onChange={e => setPartnerName(e.target.value)} placeholder="영양사(내 이름) 입력" className="text-center font-black text-xl p-3 border-b-4 border-slate-300 focus:border-blue-500 focus:outline-none bg-slate-50 rounded-t-lg w-full max-w-xs mx-auto block" />
+                </div>
+              </div>
+
+              {/* 5구 식판 UI (상단 추천 3개, 하단 기존취향 2개) */}
+              <div className="bg-slate-300 p-4 md:p-8 rounded-[2rem] shadow-inner border-4 border-slate-400 w-full mx-auto">
+                <div className="flex justify-center mb-6">
+                  <div className="bg-white px-6 py-2 rounded-full font-black text-slate-700 shadow-sm border-2 border-slate-200 flex items-center gap-2">
+                    <span className="text-xl">🍱</span> 짝꿍의 다양성 100% 식판
+                  </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-6 w-full mb-6">
+                  {[0, 1, 2].map(idx => (
+                    <div key={idx} className="flex-1 bg-white rounded-2xl p-4 shadow-md border-2 border-green-300 relative group transition-all focus-within:ring-4 ring-green-200 flex flex-col">
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-md z-10 whitespace-nowrap">✨ 짝꿍의 추천 {idx + 1}</div>
+                      
+                      <select value={newTopics[idx]} onChange={e => handleNewTopicChange(idx, e.target.value)} className="w-full p-3 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-700 focus:outline-none focus:border-green-400 mb-3 cursor-pointer mt-3">
+                        <option value="">+ 반찬 선택하기</option>
+                        {allTopics.map(t => <option key={t.id} value={t.label}>{t.icon} {t.label}</option>)}
+                      </select>
+                      
+                      <textarea value={reasons[idx]} onChange={e => handleReasonChange(idx, e.target.value)} placeholder="왜 이 주제를 추천하나요? (예: 게임만 하지 말고 운동도 하면 좋겠어!)" className="w-full flex-1 p-3 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-600 focus:outline-none focus:border-green-400 resize-none min-h-[100px] text-sm leading-relaxed" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* 하단 기존 취향 2구 */}
+                <div className="flex gap-4 md:gap-6 justify-center max-w-2xl mx-auto w-full">
+                  <div className="flex-1 bg-slate-50 rounded-2xl p-6 shadow-inner border-4 border-slate-200 flex flex-col items-center justify-center relative">
+                    <div className="absolute -top-3 bg-slate-500 text-white text-xs font-black px-4 py-1 rounded-full shadow-md whitespace-nowrap">🍚 원래 내 취향</div>
+                    <span className="text-6xl md:text-7xl mb-3 drop-shadow-sm mt-3">{activeTopic1.icon}</span>
+                    <span className="bg-white border border-slate-200 rounded-full px-4 py-2 font-bold text-slate-700 text-sm md:text-base break-keep text-center w-full shadow-sm">{activeTopic1.label}</span>
+                  </div>
+                  <div className="flex-1 bg-slate-50 rounded-2xl p-6 shadow-inner border-4 border-slate-200 flex flex-col items-center justify-center relative">
+                    <div className="absolute -top-3 bg-slate-500 text-white text-xs font-black px-4 py-1 rounded-full shadow-md whitespace-nowrap">🍚 원래 내 취향</div>
+                    <span className="text-6xl md:text-7xl mb-3 drop-shadow-sm mt-3">{activeTopic2.icon}</span>
+                    <span className="bg-white border border-slate-200 rounded-full px-4 py-2 font-bold text-slate-700 text-sm md:text-base break-keep text-center w-full shadow-sm">{activeTopic2.label}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button disabled={isSubmitting} onClick={submitTray} className="w-full md:w-auto mx-auto px-12 py-5 bg-slate-800 hover:bg-black text-white rounded-2xl font-black text-2xl shadow-xl transition-all disabled:opacity-50">
+                {isSubmitting ? "전송 중..." : "🚀 처방 완료하고 선생님께 보내기"}
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      return null;
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root')); root.render(<App />);
+  </script>
+</body>
+</html>

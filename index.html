@@ -7,116 +7,46 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <!-- Babel 7으로 업그레이드 (구버전 컴파일 에러 해결) -->
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    /* 토스 이모지: 기호/이모지 영역에만 폰트 적용 (일반 글자, 숫자 보호) */
     @font-face {
       font-family: 'TossfaceEmoji';
       src: url('https://cdn.jsdelivr.net/gh/toss/tossface/dist/tossface.woff2') format('woff2');
-      unicode-range: U+200D, U+2300-2BFF, U+1F000-1FAFF;
+      unicode-range: U+200D, U+2300-26BC, U+26BF-2BFF, U+1F000-1FAFF;
     }
 
     * {
-      font-family: 'TossfaceEmoji', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif !important;
+      font-family: 'TossfaceEmoji', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif !important;
       touch-action: manipulation;
     }
 
+    /* 드래그 방지로 터치 씹힘 원천 차단 */
     body { -webkit-user-select: none; user-select: none; }
     input, textarea { -webkit-user-select: auto; user-select: auto; }
 
-    .sports-ball-icon {
-      display: inline-block;
-      width: 1.12em;
-      height: 1.12em;
-      object-fit: contain;
-      vertical-align: -0.12em;
-      pointer-events: none;
-      user-select: none;
-    }
-
-    @keyframes pop {
-      0% { transform: scale(0.9); opacity: 0; }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); opacity: 1; }
-    }
+    @keyframes pop { 0% { transform: scale(0.9); opacity: 0; } 50% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
     .animate-pop { animation: pop 0.4s ease-out forwards; }
-
-    @keyframes fadeInSlow {
-      0% { opacity: 0; transform: translateY(20px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeInSlow { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
     .animate-fade-in { animation: fadeInSlow 0.5s ease-out forwards; }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-    }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
     .animate-float { animation: float 3s ease-in-out infinite; }
+    @keyframes shake-mild { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+    .bubble-hp-2 { animation: shake-mild 0.2s infinite; filter: brightness(0.9); }
+    @keyframes shake-hard { 0%, 100% { transform: translate(-2px, 2px) rotate(-5deg); } 50% { transform: translate(2px, -2px) rotate(5deg); } }
+    .bubble-hp-1 { animation: shake-hard 0.1s infinite; filter: brightness(0.8) sepia(1) hue-rotate(-50deg) saturate(3); box-shadow: 0 0 20px red; }
+    @keyframes pop-burst { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(2); opacity: 0; } }
+    .bubble-dead { animation: pop-burst 0.3s forwards; pointer-events: none; }
+    .glass-bubble { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.4) 60%, rgba(255,255,255,0.6) 100%); box-shadow: inset 0 0 20px rgba(255,255,255,0.8), 0 10px 20px rgba(0,0,0,0.15); backdrop-filter: blur(2px); border: 1px solid rgba(255,255,255,0.8); border-radius: 50%; }
 
-    @keyframes shake-mild {
-      0%, 100% { transform: rotate(-3deg); }
-      50% { transform: rotate(3deg); }
-    }
-    .bubble-hp-2 {
-      animation: shake-mild 0.2s infinite;
-      filter: brightness(0.9);
-    }
-
-    @keyframes shake-hard {
-      0%, 100% { transform: translate(-2px, 2px) rotate(-5deg); }
-      50% { transform: translate(2px, -2px) rotate(5deg); }
-    }
-    .bubble-hp-1 {
-      animation: shake-hard 0.1s infinite;
-      filter: brightness(0.8) sepia(1) hue-rotate(-50deg) saturate(3);
-      box-shadow: 0 0 20px red;
-    }
-
-    @keyframes pop-burst {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.5); opacity: 0.5; }
-      100% { transform: scale(2); opacity: 0; }
-    }
-    .bubble-dead {
-      animation: pop-burst 0.3s forwards;
-      pointer-events: none;
-    }
-
-    .glass-bubble {
-      background: radial-gradient(
-        circle at 30% 30%,
-        rgba(255,255,255,0.9),
-        rgba(255,255,255,0.4) 60%,
-        rgba(255,255,255,0.6) 100%
-      );
-      box-shadow:
-        inset 0 0 20px rgba(255,255,255,0.8),
-        0 10px 20px rgba(0,0,0,0.15);
-      backdrop-filter: blur(2px);
-      border: 1px solid rgba(255,255,255,0.8);
-      border-radius: 50%;
-    }
-
-    @keyframes scan {
-      0% { top: 0; opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
-      100% { top: 100%; opacity: 0; }
-    }
-    .scan-line {
-      width: 100%;
-      height: 4px;
-      background: rgba(59, 130, 246, 0.8);
-      position: absolute;
-      box-shadow: 0 0 15px rgba(59, 130, 246, 1);
-      animation: scan 2s linear infinite;
-      z-index: 10;
-    }
+    @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+    .scan-line { width: 100%; height: 4px; background: rgba(59, 130, 246, 0.8); position: absolute; box-shadow: 0 0 15px rgba(59, 130, 246, 1); animation: scan 2s linear infinite; z-index: 10; }
   </style>
 </head>
-
 <body class="bg-gray-50 text-gray-800 selection:bg-blue-200">
   <div id="root"></div>
 
@@ -125,12 +55,14 @@
 
     const SUPABASE_URL = 'https://plsdgoibpfjuvdtjvffb.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_oXlE7oQpWNxRzCHwXdp7Vw_EnDwLXpL';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 사운드 발생기
+    // Supabase 안전 초기화
+    const supabase = window.supabase
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+      : null;
+
     const SoundEngine = {
       ctx: null,
-
       getCtx: function() {
         if (!this.ctx) {
           this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -140,7 +72,6 @@
         }
         return this.ctx;
       },
-
       playScan: function(isMuted) {
         if (isMuted) return;
         try {
@@ -150,24 +81,23 @@
           osc.connect(gain);
           gain.connect(ctx.destination);
 
-          osc.type = 'square';
+          osc.type = 'sawtooth';
           const now = ctx.currentTime;
 
           let time = now;
-          for (let i = 0; i < 40; i++) {
-            osc.frequency.setValueAtTime(1000 + Math.random() * 1500, time);
-            time += 0.03;
+          for(let i = 0; i < 35; i++) {
+            osc.frequency.setValueAtTime(800 + Math.random() * 1800, time);
+            time += 0.035;
           }
 
-          gain.gain.setValueAtTime(0.02, now);
-          gain.gain.setValueAtTime(0.02, now + 1.0);
-          gain.gain.linearRampToValueAtTime(0, now + 1.2);
+          gain.gain.setValueAtTime(0.03, now);
+          gain.gain.setValueAtTime(0.03, now + 1.1);
+          gain.gain.linearRampToValueAtTime(0, now + 1.25);
 
           osc.start(now);
-          osc.stop(now + 1.2);
-        } catch (e) {}
+          osc.stop(now + 1.25);
+        } catch(e) {}
       },
-
       playPop: function(isMuted) {
         if (isMuted) return;
         try {
@@ -186,134 +116,76 @@
 
           osc.start(now);
           osc.stop(now + 0.1);
-        } catch (e) {}
+        } catch(e) {}
       }
     };
 
     const allTopics = [
-      { id: 1, icon: '🎮', label: '로블록스 게임' },
-      { id: 2, icon: '⛏', label: '마인크래프트' },
-      { id: 3, icon: '🐶', label: '귀여운 강아지' },
-      { id: 4, icon: '🐱', label: '예쁜 고양이' },
-      { id: 5, icon: '🏎️', label: '슈퍼카 레이싱' },
-      { id: 6, icon: '🎢', label: '놀이공원 탐험' },
-      { id: 7, icon: '🎤', label: '아이돌/K-POP' },
-      { id: 8, icon: '💃', label: '댄스 챌린지' },
-      { id: 9, icon: '🔬', label: '신기한 과학실험' },
-      { id: 10, icon: '💧', label: '액체괴물 만들기' },
-      { id: 11, icon: '🍔', label: '엄청난 먹방' },
-      { id: 12, icon: '🎬', label: '인기 애니메이션' },
-      { id: 13, icon: '😂', label: '꿀잼 코미디' },
-      { id: 14, icon: '🎨', label: '금손 그림 그리기' },
-      { id: 15, icon: '🧩', label: '레고 조립 달인' },
-      { id: 16, icon: '🎩', label: '신기한 마술' },
-      { id: 17, icon: '🍳', label: '간단 요리 레시피' },
-      { id: 18, icon: '🚀', label: '신비한 우주 탐험' },
-      { id: 19, icon: '👻', label: '오싹한 미스터리' },
-      { id: 20, icon: '📹', label: '유튜버 브이로그' },
-      { id: 21, icon: '🦖', label: '공룡의 세계' },
-      { id: 22, icon: '🐹', label: '귀여운 햄스터' },
-      { id: 23, icon: '💅', label: '화려한 네일아트' },
-      { id: 24, icon: '🎪', label: '서커스 묘기' },
-      { id: 25, icon: '🎧', label: '수면 ASMR' },
-      {
-        id: 26,
-        icon: <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZGVmcz48cmFkaWFsR3JhZGllbnQgaWQ9ImJhbGwiIGN4PSIzMiUiIGN5PSIyNCUiIHI9IjgwJSI+PHN0b3Agc3RvcC1jb2xvcj0iI2ZmZiIvPjxzdG9wIG9mZnNldD0iLjU1IiBzdG9wLWNvbG9yPSIjZjVmN2ZhIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjYTZiMWMyIi8+PC9yYWRpYWxHcmFkaWVudD48bGluZWFyR3JhZGllbnQgaWQ9InBhbmVsIiB4Mj0iLjgiIHkyPSIxIj48c3RvcCBzdG9wLWNvbG9yPSIjNDc1NTY5Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMTExODI3Ii8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImNsaXAiPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjAiIHI9IjUzIi8+PC9jbGlwUGF0aD48L2RlZnM+PGVsbGlwc2UgY3g9IjY2IiBjeT0iMTE3IiByeD0iMzciIHJ5PSI1IiBmaWxsPSIjOTRhM2I4IiBvcGFjaXR5PSIuMjIiLz48Y2lyY2xlIGN4PSI2NCIgY3k9IjYwIiByPSI1MyIgZmlsbD0idXJsKCNiYWxsKSIvPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwKSI+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYWFiNGMyIiBzdHJva2Utd2lkdGg9IjEuNSI+PHBhdGggZD0iTTQ0IDQ0IDI5IDI1IDQ5IDhNODAgNDEgOTQgMjMgNzggN004OCA2NiAxMTEgNzMgMTE5IDQ4TTY1IDgyIDY1IDEwNCA0MiAxMTdNNDAgNjkgMTggNzcgOSA1ME0yOSAyNSAxMiAzM005NCAyMyAxMTEgMzFNMTExIDczIDk5IDk2IDY1IDEwNE0xOCA3NyAzMCA5OSA2NSAxMDQiLz48L2c+PGcgZmlsbD0idXJsKCNwYW5lbCkiPjxwYXRoIGQ9Im00NCA0NCAyMS0xMiAyMCAxNC03IDI0LTI3IDF6Ii8+PHBhdGggZD0ibTQ5IDggMjktMSA0IDEwLTE4IDgtMTktOXoiLz48cGF0aCBkPSJtOCAzMCAyMS01IDIgMTktMTYgMTUtMTAtOHoiLz48cGF0aCBkPSJtOTQgMjMgMjIgNyA5IDIzLTE4IDUtMTYtMTd6Ii8+PHBhdGggZD0ibTE4IDc3IDIwIDQgNyAxOC0xNiAxMy0xNi0xNnoiLz48cGF0aCBkPSJtODkgODMgMjItMTAgNyAyMy0xNyAxNy0xOC0xNHoiLz48cGF0aCBkPSJtNTUgMTA5IDIyLTEgOSAxMy0zOCAyeiIvPjwvZz48cGF0aCBkPSJNMjAgNDNDMzIgMTQgNjUgNyA4NSAxOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIG9wYWNpdHk9Ii41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L2c+PC9zdmc+" alt="축구공" draggable="false" className="sports-ball-icon" />,
-        label: '축구 하이라이트'
-      },
-      {
-        id: 27,
-        icon: <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZGVmcz48cmFkaWFsR3JhZGllbnQgaWQ9ImJhbGwiIGN4PSIzMCUiIGN5PSIyMiUiIHI9IjgzJSI+PHN0b3Agc3RvcC1jb2xvcj0iI2ZmZiIvPjxzdG9wIG9mZnNldD0iLjU3IiBzdG9wLWNvbG9yPSIjZmZmYWYzIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjYzRjOWQyIi8+PC9yYWRpYWxHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImNsaXAiPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjAiIHI9IjUzIi8+PC9jbGlwUGF0aD48L2RlZnM+PGVsbGlwc2UgY3g9IjY2IiBjeT0iMTE3IiByeD0iMzciIHJ5PSI1IiBmaWxsPSIjOTRhM2I4IiBvcGFjaXR5PSIuMjIiLz48Y2lyY2xlIGN4PSI2NCIgY3k9IjYwIiByPSI1MyIgZmlsbD0idXJsKCNiYWxsKSIvPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwKSIgdHJhbnNmb3JtPSJyb3RhdGUoLTIyIDY0IDYwKSI+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYjU4MTc5IiBzdHJva2Utd2lkdGg9IjEuNCIgb3BhY2l0eT0iLjY1Ij48cGF0aCBkPSJNMjQgNkM2MiAzNCA2MiA4NiAyNCAxMTRNMTA0IDZDNjYgMzQgNjYgODYgMTA0IDExNCIvPjwvZz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNlNTUyNTIiIHN0cm9rZS13aWR0aD0iMy4xIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Im0yOSAxNSAxIDggOC0ybS0xIDUgMCA4IDgtMm0tNCA3LTEgOCA4LTFtLTUgOC0yIDcgOCAxbS02IDctNCA2IDcgM20tNyA1LTUgNSA2IDRtLTggNC02IDQgNSA1TTk5IDE1bC0xIDgtOC0ybTEgNSAwIDgtOC0ybTQgNyAxIDgtOC0xbTUgOCAyIDctOCAxbTYgNyA0IDYtNyAzbTcgNSA1IDUtNiA0bTggNCA2IDQtNSA1Ii8+PC9nPjwvZz48cGF0aCBkPSJNMjQgMzdDMzcgMTcgNTkgMTIgNzUgMTYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1IiBvcGFjaXR5PSIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+" alt="야구공" draggable="false" className="sports-ball-icon" />,
-        label: '야구 명장면'
-      },
-      { id: 28, icon: '🏕️', label: '감성 캠핑' },
-      { id: 29, icon: '🥋', label: '태권도 격파' },
-      { id: 30, icon: '🦈', label: '심해 상어 탐험' },
-      { id: 31, icon: '👗', label: '패션 코디' },
-      { id: 32, icon: '🛹', label: '스케이트보드 묘기' },
-      { id: 33, icon: '🍰', label: '디저트 만들기' },
-      { id: 34, icon: '🎹', label: '피아노 연주' },
-      { id: 35, icon: '✈️', label: '세계 여행' },
-      { id: 36, icon: '🐬', label: '돌고래 쇼' },
-      { id: 37, icon: '🚴', label: '자전거 라이딩' },
-      { id: 38, icon: '🎭', label: '상황극 꽁트' },
-      { id: 39, icon: '📚', label: '흥미진진 역사' },
-      { id: 40, icon: '🐠', label: '아름다운 수족관' }
+      { id: 1, icon: '🎮', label: '로블록스 게임' }, { id: 2, icon: '⛏', label: '마인크래프트' },
+      { id: 3, icon: '🐶', label: '귀여운 강아지' }, { id: 4, icon: '🐱', label: '예쁜 고양이' },
+      { id: 5, icon: '🏎️', label: '슈퍼카 레이싱' }, { id: 6, icon: '🎢', label: '놀이공원 탐험' },
+      { id: 7, icon: '🎤', label: '아이돌/K-POP' }, { id: 8, icon: '💃', label: '댄스 챌린지' },
+      { id: 9, icon: '🔬', label: '신기한 과학실험' }, { id: 10, icon: '💧', label: '액체괴물 만들기' },
+      { id: 11, icon: '🍔', label: '엄청난 먹방' }, { id: 12, icon: '🎬', label: '인기 애니메이션' },
+      { id: 13, icon: '😂', label: '꿀잼 코미디' }, { id: 14, icon: '🎨', label: '금손 그림 그리기' },
+      { id: 15, icon: '🧩', label: '레고 조립 달인' }, { id: 16, icon: '🎩', label: '신기한 마술' },
+      { id: 17, icon: '🍳', label: '간단 요리 레시피' }, { id: 18, icon: '🚀', label: '신비한 우주 탐험' },
+      { id: 19, icon: '👻', label: '오싹한 미스터리' }, { id: 20, icon: '📹', label: '유튜버 브이로그' },
+      { id: 21, icon: '🦖', label: '공룡의 세계' }, { id: 22, icon: '🐹', label: '귀여운 햄스터' },
+      { id: 23, icon: '💅', label: '화려한 네일아트' }, { id: 24, icon: '🎪', label: '서커스 묘기' },
+      { id: 25, icon: '🎧', label: '수면 ASMR' }, { id: 26, icon: '⚽️', label: '축구 하이라이트' },
+      { id: 27, icon: '⚾️', label: '야구 명장면' }, { id: 28, icon: '🏕️', label: '감성 캠핑' },
+      { id: 29, icon: '🥋', label: '태권도 격파' }, { id: 30, icon: '🦈', label: '심해 상어 탐험' },
+      { id: 31, icon: '👗', label: '패션 코디' }, { id: 32, icon: '🛹', label: '스케이트보드 묘기' },
+      { id: 33, icon: '🍰', label: '디저트 만들기' }, { id: 34, icon: '🎹', label: '피아노 연주' },
+      { id: 35, icon: '✈️', label: '세계 여행' }, { id: 36, icon: '🐬', label: '돌고래 쇼' },
+      { id: 37, icon: '🚴', label: '자전거 라이딩' }, { id: 38, icon: '🎭', label: '상황극 꽁트' },
+      { id: 39, icon: '📚', label: '흥미진진 역사' }, { id: 40, icon: '🐠', label: '아름다운 수족관' }
     ];
 
-    const PasswordUnlock = ({
-      checked,
-      setChecked,
-      isUnlocked,
-      onUnlock,
-      password,
-      checkText,
-      triggerConfetti = false
-    }) => {
+    const PasswordUnlock = ({ checked, setChecked, isUnlocked, onUnlock, password, checkText, triggerConfetti = false }) => {
       const [pwd, setPwd] = useState('');
+      const [errorMsg, setErrorMsg] = useState('');
 
       const handleUnlock = () => {
         if (pwd === password) {
+          setErrorMsg('');
           onUnlock();
-          if (triggerConfetti) {
-            confetti({
-              particleCount: 150,
-              spread: 80,
-              origin: { y: 0.6 },
-              zIndex: 9999
-            });
+          // 외부 라이브러리 안전 처리
+          if (triggerConfetti && typeof confetti === 'function') {
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 9999 });
           }
         } else {
-          alert("비밀번호가 틀렸습니다!");
+          setErrorMsg("비밀번호가 틀렸습니다!");
           setPwd('');
+          setTimeout(() => setErrorMsg(''), 2500);
         }
       };
 
       if (isUnlocked) {
         return (
           <div className="bg-green-100 text-green-700 font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-2 border-4 border-green-400 w-full max-w-md mx-auto mt-4 animate-pop shadow-md">
-            <span className="text-2xl">✅</span>
-            <span>확인 완료!</span>
+            <span className="text-2xl">✅</span> <span>확인 완료!</span>
           </div>
         );
       }
 
       if (!checked) {
         return (
-          <button
-            onClick={() => setChecked(true)}
-            className={`flex items-center justify-center gap-3 w-full max-w-md mx-auto py-4 mt-4 rounded-2xl font-bold text-lg transition-all border-b-4 shadow-sm active:translate-y-1 active:border-b-0 break-keep ${
-              checkText.includes('전송하기')
-                ? 'bg-blue-500 hover:bg-blue-600 border-blue-700 text-white shadow-lg'
-                : 'bg-white hover:bg-gray-50 border-gray-300 text-gray-600'
-            }`}
-          >
+          <button onClick={() => setChecked(true)} className={`flex items-center justify-center gap-3 w-full max-w-md mx-auto py-4 mt-4 rounded-2xl font-bold text-lg transition-all border-b-4 shadow-sm active:translate-y-1 active:border-b-0 break-keep ${checkText.includes('전송하기') ? 'bg-blue-500 hover:bg-blue-600 border-blue-700 text-white shadow-lg' : 'bg-white hover:bg-gray-50 border-gray-300 text-gray-600'}`}>
             {checkText}
           </button>
         );
       }
 
       return (
-        <div className="flex flex-col items-center gap-3 w-full max-w-full sm:max-w-md mx-auto bg-white p-4 sm:p-6 rounded-2xl border-4 border-blue-400 mt-4 shadow-xl animate-pop box-border">
-          <p className="font-bold text-blue-700 text-lg flex items-center gap-2 break-keep">
-            <span className="text-2xl">🔒</span> 암호 입력
-          </p>
+        <div className="flex flex-col items-center gap-3 w-full max-w-full sm:max-w-md mx-auto bg-white p-4 sm:p-6 rounded-2xl border-4 border-blue-400 mt-4 shadow-xl animate-pop box-border relative">
+          <p className="font-bold text-blue-700 text-lg flex items-center gap-2 break-keep"><span className="text-2xl">🔒</span> 암호 입력</p>
           <div className="flex gap-2 w-full mt-2 box-border">
-            <input
-              type="password"
-              value={pwd}
-              onChange={e => setPwd(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleUnlock()}
-              placeholder="영타 입력"
-              className="flex-1 min-w-0 border-2 border-gray-300 rounded-xl px-2 sm:px-4 py-3 font-bold focus:outline-none focus:border-blue-500 text-center text-lg sm:text-xl tracking-widest box-border"
-            />
-            <button
-              onClick={handleUnlock}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 sm:px-6 rounded-xl shadow-md shrink-0 box-border"
-            >
-              확인
-            </button>
+            <input type="password" value={pwd} onChange={e => setPwd(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleUnlock()} placeholder="영타 입력" className="flex-1 min-w-0 border-2 border-gray-300 rounded-xl px-2 sm:px-4 py-3 font-bold focus:outline-none focus:border-blue-500 text-center text-lg sm:text-xl tracking-widest box-border" />
+            <button onClick={handleUnlock} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 sm:px-6 rounded-xl shadow-md shrink-0 box-border">확인</button>
           </div>
+          {errorMsg && <p className="text-red-500 font-bold mt-2 animate-bounce">{errorMsg}</p>}
         </div>
       );
     };
@@ -340,18 +212,12 @@
         <div className="flex flex-col bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100">
           <div className={`w-full aspect-video bg-gradient-to-br ${item.bg} relative flex items-center justify-center`}>
             <span className="text-6xl drop-shadow-md">{item.icon}</span>
-            <span className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-bold px-1.5 py-0.5 rounded">
-              {item.time}
-            </span>
+            <span className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-bold px-1.5 py-0.5 rounded">{item.time}</span>
           </div>
           <div className="p-3 flex gap-3 items-start">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0 border border-gray-200 ${item.avatar}`}>
-              👤
-            </div>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0 border border-gray-200 ${item.avatar}`}>👤</div>
             <div className="flex flex-col">
-              <h4 className="font-bold text-gray-900 text-sm leading-tight line-clamp-2">
-                {item.title}
-              </h4>
+              <h4 className="font-bold text-gray-900 text-sm leading-tight line-clamp-2">{item.title}</h4>
               <span className="text-xs text-gray-500 mt-1">{item.channel}</span>
             </div>
           </div>
@@ -361,64 +227,30 @@
       return (
         <div className="flex flex-col items-center p-6 space-y-6 animate-pop w-full">
           <div className="flex items-center gap-3 bg-red-50 px-6 py-3 rounded-full border-2 border-red-200 mb-2 shadow-sm">
-            <span className="text-red-500 text-3xl">▶</span>
-            <h2 className="text-2xl font-black text-red-600">유튜브 키즈 탐정단</h2>
+            <span className="text-red-500 text-3xl">▶</span><h2 className="text-2xl font-black text-red-600">유튜브 키즈 탐정단</h2>
           </div>
-
           {step === 1 ? (
             <div className="w-full max-w-5xl animate-pop">
               <div className="bg-white p-8 rounded-3xl shadow-xl border-4 border-gray-200 w-full">
-                <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-gray-100">
-                  <span className="text-3xl">🕒</span>
-                  <h3 className="text-2xl font-black text-gray-800">민수의 어제 시청 기록</h3>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                  {historyData.map(item => <VideoCard key={item.id} item={item} />)}
-                </div>
+                <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-gray-100"><span className="text-3xl">🕒</span><h3 className="text-2xl font-black text-gray-800">민수의 어제 시청 기록</h3></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">{historyData.map(item => <VideoCard key={item.id} item={item} />)}</div>
               </div>
               <div className="mt-8 flex justify-center">
-                <button
-                  onClick={() => setStep(2)}
-                  className="bg-red-500 hover:bg-red-600 text-white font-black text-xl py-5 px-10 rounded-full shadow-xl border-b-4 border-red-700 active:translate-y-1 active:border-b-0 animate-bounce"
-                >
-                  다음: 알고리즘은 무엇을 추천했을까? 👉
-                </button>
+                <button onClick={() => setStep(2)} className="bg-red-500 hover:bg-red-600 text-white font-black text-xl py-5 px-10 rounded-full shadow-xl border-b-4 border-red-700 active:translate-y-1 active:border-b-0 animate-bounce">다음: 알고리즘은 무엇을 추천했을까? 👉</button>
               </div>
             </div>
           ) : (
             <div className="w-full max-w-5xl animate-pop flex flex-col items-center">
               <div className="bg-white p-8 rounded-3xl shadow-xl border-4 border-red-400 w-full mb-8 relative">
-                <h3 className="text-2xl font-black mb-6 text-red-600 text-center">
-                  ✨ 알고리즘의 다음 추천 영상
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                  {recoData.map(item => <VideoCard key={item.id} item={item} />)}
-                </div>
+                <h3 className="text-2xl font-black mb-6 text-red-600 text-center">✨ 알고리즘의 다음 추천 영상</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">{recoData.map(item => <VideoCard key={item.id} item={item} />)}</div>
               </div>
-
               <div className="bg-yellow-50 p-8 rounded-3xl border-4 border-yellow-300 w-full max-w-4xl text-center shadow-lg">
                 <h3 className="text-3xl font-black text-gray-800 mb-4">🚨 탐정 미션</h3>
-                <p className="text-lg text-gray-700 font-bold mb-6 break-keep">
-                  알고리즘은 왜 이 영상들을 추천했을까요? 원인을 <span className="text-red-500">패들렛</span>에 적어보세요!
-                </p>
-                <PasswordUnlock
-                  checked={checked}
-                  setChecked={setChecked}
-                  isUnlocked={isUnlocked}
-                  onUnlock={onUnlock}
-                  password="dkf"
-                  checkText="패들렛에 탐정 보고서를 올렸습니다!"
-                />
+                <p className="text-lg text-gray-700 font-bold mb-6 break-keep">알고리즘은 왜 이 영상들을 추천했을까요? 원인을 <span className="text-red-500">패들렛</span>에 적어보세요!</p>
+                <PasswordUnlock checked={checked} setChecked={setChecked} isUnlocked={isUnlocked} onUnlock={onUnlock} password="dkf" checkText="패들렛에 탐정 보고서를 올렸습니다!" />
               </div>
-
-              {!isUnlocked && (
-                <button
-                  onClick={() => setStep(1)}
-                  className="mt-6 text-gray-400 underline font-medium"
-                >
-                  &lt; 다시 시청 기록 보기
-                </button>
-              )}
+              {!isUnlocked && <button onClick={() => setStep(1)} className="mt-6 text-gray-400 underline font-medium">&lt; 다시 시청 기록 보기</button>}
             </div>
           )}
         </div>
@@ -527,18 +359,15 @@
           let currentString = '';
           let i = 0;
           const text = scenarios[currentQ].log;
-
           const interval = setInterval(() => {
             currentString += text.charAt(i);
             setTypedLog(currentString);
             i++;
-
             if (i >= text.length) {
               clearInterval(interval);
               setIsTyping(false);
             }
           }, 40);
-
           return () => clearInterval(interval);
         }
       }, [currentQ, showOptions, isScanning, selectedOpt]);
@@ -546,10 +375,7 @@
       const handleScan = () => {
         SoundEngine.playScan(isMuted);
         setIsScanning(true);
-        setTimeout(() => {
-          setIsScanning(false);
-          setShowOptions(true);
-        }, 2000);
+        setTimeout(() => { setIsScanning(false); setShowOptions(true); }, 2000);
       };
 
       const handleOption = (opt) => {
@@ -557,9 +383,8 @@
       };
 
       const handleNextQ = () => {
-        if (selectedOpt.correct) {
+        if(selectedOpt.correct) {
           setTraits([...traits, { id: currentQ, label: selectedOpt.label }]);
-
           if (currentQ < scenarios.length - 1) {
             setCurrentQ(q => q + 1);
             setShowOptions(false);
@@ -576,42 +401,24 @@
       return (
         <div className="flex flex-col items-center p-6 w-full animate-pop">
           <div className="flex items-center gap-3 bg-slate-800 px-6 py-3 rounded-full border-2 border-slate-600 mb-6 shadow-lg">
-            <span className="text-blue-400 text-3xl">🕵️‍♂️</span>
-            <h2 className="text-2xl font-black text-white tracking-wider">
-              미션 2: 데이터 몽타주 만들기
-            </h2>
+            <span className="text-blue-400 text-3xl">🕵️‍♂️</span><h2 className="text-2xl font-black text-white tracking-wider">미션 2: 데이터 몽타주 만들기</h2>
           </div>
 
           <div className="w-full max-w-5xl flex flex-col md:flex-row gap-6">
             <div className="flex-1 bg-white p-6 rounded-3xl shadow-xl border-4 border-gray-200 flex flex-col relative overflow-hidden">
-              <h3 className="text-xl font-black text-gray-800 mb-4 border-b-2 pb-2">
-                📡 행동 추적 알고리즘
-              </h3>
+              <h3 className="text-xl font-black text-gray-800 mb-4 border-b-2 pb-2">📡 행동 추적 알고리즘</h3>
 
               {currentQ < scenarios.length ? (
                 <div className="flex-1 flex flex-col animate-pop">
                   <div className={`bg-gray-900 p-6 rounded-xl font-mono text-sm mb-6 shadow-inner relative overflow-hidden transition-colors ${isScanning ? 'text-blue-300' : 'text-green-400'}`}>
                     {isScanning && <div className="scan-line"></div>}
-                    <p className="font-bold text-gray-400 mb-2">
-                      [System] 새로운 행동 데이터 포착!
-                    </p>
-                    <p className="text-lg leading-relaxed min-h-[4rem] break-keep">
-                      {typedLog}
-                      {isTyping && <span className="animate-pulse">_</span>}
-                    </p>
+                    <p className="font-bold text-gray-400 mb-2">[System] 새로운 행동 데이터 포착!</p>
+                    <p className="text-lg leading-relaxed min-h-[4rem] break-keep">{typedLog}{isTyping && <span className="animate-pulse">_</span>}</p>
                   </div>
 
                   {!showOptions && !isScanning && !selectedOpt && (
                     <div className="flex-1 flex items-center justify-center">
-                      <button
-                        onClick={handleScan}
-                        disabled={isTyping}
-                        className={`font-black text-xl py-4 px-8 rounded-full shadow-lg border-b-4 active:translate-y-1 active:border-b-0 transition-all ${
-                          isTyping
-                            ? 'bg-gray-300 text-gray-500 border-gray-400 cursor-not-allowed'
-                            : 'bg-blue-500 hover:bg-blue-600 text-white border-blue-700 animate-bounce'
-                        }`}
-                      >
+                      <button onClick={handleScan} disabled={isTyping} className={`font-black text-xl py-4 px-8 rounded-full shadow-lg border-b-4 active:translate-y-1 active:border-b-0 transition-all ${isTyping ? 'bg-gray-300 text-gray-500 border-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white border-blue-700 animate-bounce'}`}>
                         {isTyping ? '데이터 수집 중...' : '🔍 알고리즘 스캔 시작!'}
                       </button>
                     </div>
@@ -619,23 +426,17 @@
 
                   {isScanning && (
                     <div className="flex-1 flex flex-col items-center justify-center text-blue-500 font-bold text-xl animate-pulse">
-                      <span className="text-5xl mb-3">⚙️</span>
+                      <span className="text-5xl mb-3">⚙</span>
                       데이터 분석 중...
                     </div>
                   )}
 
                   {showOptions && !selectedOpt && (
                     <div className="flex flex-col animate-fade-in">
-                      <p className="font-black text-lg mb-3 text-slate-700 break-keep">
-                        🤔 당신이 알고리즘이라면 이 데이터를 어떻게 판단할까요?
-                      </p>
+                      <p className="font-black text-lg mb-3 text-slate-700 break-keep">🤔 당신이 알고리즘이라면 이 데이터를 어떻게 판단할까요?</p>
                       <div className="flex flex-col gap-3">
                         {scenarios[currentQ].options.map(opt => (
-                          <button
-                            key={opt.id}
-                            onClick={() => handleOption(opt)}
-                            className="text-left bg-slate-50 hover:bg-slate-100 border-2 border-slate-200 p-4 rounded-xl font-bold text-gray-700 transition-all active:scale-[0.98] break-keep"
-                          >
+                          <button key={opt.id} onClick={() => handleOption(opt)} className="text-left bg-slate-50 hover:bg-slate-100 border-2 border-slate-200 p-4 rounded-xl font-bold text-gray-700 transition-all active:scale-[0.98] break-keep">
                             {opt.text}
                           </button>
                         ))}
@@ -646,19 +447,12 @@
                   {selectedOpt && (
                     <div className={`flex flex-col animate-pop p-6 rounded-2xl border-4 ${selectedOpt.correct ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'}`}>
                       <h4 className={`text-2xl font-black mb-3 break-keep ${selectedOpt.correct ? 'text-green-600' : 'text-red-600'}`}>
-                        {selectedOpt.correct
-                          ? '⭕ 알고리즘의 생각과 일치합니다!'
-                          : '❌ 땡! 알고리즘은 그렇게 생각하지 않아요!'}
+                        {selectedOpt.correct ? '⭕ 알고리즘의 생각과 일치합니다!' : '❌ 땡! 알고리즘은 그렇게 생각하지 않아요!'}
                       </h4>
-
                       <p className="text-gray-700 font-bold text-lg mb-6 leading-relaxed bg-white p-4 rounded-xl shadow-inner break-keep">
                         {selectedOpt.explanation}
                       </p>
-
-                      <button
-                        onClick={handleNextQ}
-                        className={`font-black text-white py-4 px-6 rounded-xl shadow-md text-lg transition-transform active:scale-95 ${selectedOpt.correct ? 'bg-slate-800 hover:bg-slate-900' : 'bg-red-500 hover:bg-red-600'}`}
-                      >
+                      <button onClick={handleNextQ} className={`font-black text-white py-4 px-6 rounded-xl shadow-md text-lg transition-transform active:scale-95 ${selectedOpt.correct ? 'bg-slate-800 hover:bg-slate-900' : 'bg-red-500 hover:bg-red-600'}`}>
                         {selectedOpt.correct ? '다음 데이터 분석하기 ▶' : '다시 선택하기 ↺'}
                       </button>
                     </div>
@@ -667,39 +461,18 @@
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center animate-pop text-center p-6">
                   <span className="text-7xl mb-4 text-blue-500">완료</span>
-                  <h3 className="text-2xl font-black text-slate-800 mb-2">
-                    프로파일링 완료!
-                  </h3>
-                  <p className="text-gray-600 font-bold text-lg break-keep">
-                    무심코 한 작은 행동들이 모여<br/>
-                    민수보다 민수를 더 잘 아는 몽타주가 만들어졌습니다.
-                  </p>
+                  <h3 className="text-2xl font-black text-slate-800 mb-2">프로파일링 완료!</h3>
+                  <p className="text-gray-600 font-bold text-lg break-keep">무심코 한 작은 행동들이 모여<br/>민수보다 민수를 더 잘 아는 몽타주가 만들어졌습니다.</p>
                 </div>
               )}
             </div>
 
             <div className="flex-1 bg-slate-900 p-6 rounded-3xl shadow-inner border-4 border-slate-700 flex flex-col items-center justify-center relative min-h-[500px] overflow-hidden">
-              <h3 className="absolute top-6 text-xl font-black text-blue-400 tracking-widest z-30 drop-shadow-md">
-                🤖 DIGITAL PROFILING
-              </h3>
-
-              <div
-                className="absolute inset-0 opacity-20"
-                style={{
-                  backgroundImage: 'linear-gradient(rgba(59, 130, 246, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.5) 1px, transparent 1px)',
-                  backgroundSize: '20px 20px'
-                }}
-              ></div>
-
+              <h3 className="absolute top-6 text-xl font-black text-blue-400 tracking-widest z-30 drop-shadow-md">🤖 DIGITAL PROFILING</h3>
+              <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(rgba(59, 130, 246, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.5) 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
               <div className="relative mt-8 w-64 h-64 flex items-center justify-center z-20">
                 <div className="w-32 h-32 bg-slate-800 rounded-full border-4 border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.3)] flex items-center justify-center relative z-10 transition-all duration-500">
-                  <svg
-                    className={`w-20 h-20 ${traits.length > 0 ? 'text-blue-400' : 'text-slate-600'} transition-colors duration-1000`}
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                  </svg>
+                  <svg className={`w-20 h-20 ${traits.length > 0 ? 'text-blue-400' : 'text-slate-600'} transition-colors duration-1000`} fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                 </div>
 
                 <div className="absolute w-48 h-48 border border-blue-500/30 rounded-full animate-ping opacity-50"></div>
@@ -718,35 +491,21 @@
                     { top: '15%', left: '-50px', transform: 'translate(0, -50%)' },
                     { top: '-10px', left: '20%', transform: 'translate(-50%, -50%)' }
                   ];
-
                   return (
-                    <div
-                      key={`l-${i}`}
-                      className="absolute animate-pop whitespace-nowrap px-4 py-2 rounded-lg font-bold text-sm bg-blue-900/90 text-blue-100 border border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.6)] backdrop-blur-sm z-30 flex items-center gap-2"
-                      style={positions[i]}
-                    >
+                    <div key={`l-${i}`} className="absolute animate-pop whitespace-nowrap px-4 py-2 rounded-lg font-bold text-sm bg-blue-900/90 text-blue-100 border border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.6)] backdrop-blur-sm z-30 flex items-center gap-2"
+                         style={positions[i]}>
                       <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]"></span>
                       {t.label}
                     </div>
-                  );
+                  )
                 })}
               </div>
 
               {currentQ === 99 && (
                 <div className="mt-16 w-full animate-fade-in z-30 relative">
                   <div className="bg-white/95 backdrop-blur p-6 rounded-2xl shadow-2xl border-4 border-red-400 text-center">
-                    <p className="font-bold text-red-600 mb-4 text-lg leading-tight break-keep">
-                      이제 알고리즘은 몽타주에 맞춰<br/>
-                      비슷한 영상만 무한히 쏟아낼 것입니다!
-                    </p>
-                    <PasswordUnlock
-                      checked={checked}
-                      setChecked={setChecked}
-                      isUnlocked={isUnlocked}
-                      onUnlock={onUnlock}
-                      password="rh"
-                      checkText="비슷한 영상만 계속 보면 어떻게 되는지 확인하기"
-                    />
+                    <p className="font-bold text-red-600 mb-4 text-lg leading-tight break-keep">이제 알고리즘은 몽타주에 맞춰<br/>비슷한 영상만 무한히 쏟아낼 것입니다!</p>
+                    <PasswordUnlock checked={checked} setChecked={setChecked} isUnlocked={isUnlocked} onUnlock={onUnlock} password="rh" checkText="비슷한 영상만 계속 보면 어떻게 되는지 확인하기" />
                   </div>
                 </div>
               )}
@@ -756,19 +515,12 @@
       );
     };
 
-    const Mission3 = ({
-      isUnlocked,
-      onUnlock,
-      baseTopics,
-      setBaseTopics,
-      userName,
-      setUserName,
-      isMuted
-    }) => {
+    const Mission3 = ({ isUnlocked, onUnlock, baseTopics, setBaseTopics, userName, setUserName, isMuted }) => {
       const [inputName, setInputName] = useState('');
       const [clicks, setClicks] = useState(0);
       const [simStarted, setSimStarted] = useState(false);
       const [checked, setChecked] = useState(false);
+      const [errorMsg, setErrorMsg] = useState('');
 
       const safePositions = [
         {x: 15, y: 15}, {x: 85, y: 15}, {x: 15, y: 85}, {x: 85, y: 85},
@@ -782,211 +534,129 @@
       ];
 
       const handleSelect = (topic) => {
-        if (!inputName.trim()) {
-          alert("이름을 먼저 적어주세요!");
-          return;
+        if(!inputName.trim()) {
+            setErrorMsg("이름을 먼저 적어주세요!");
+            setTimeout(() => setErrorMsg(''), 2500);
+            return;
         }
-
+        setErrorMsg('');
         setUserName(inputName);
-
-        if (baseTopics.find(t => t.id === topic.id)) {
-          setBaseTopics(baseTopics.filter(t => t.id !== topic.id));
-        } else if (baseTopics.length < 2) {
-          setBaseTopics([...baseTopics, topic]);
+        if(baseTopics.find(t => t.id === topic.id)) {
+            setBaseTopics(baseTopics.filter(t => t.id !== topic.id));
+        } else if(baseTopics.length < 2) {
+            setBaseTopics([...baseTopics, topic]);
         }
       };
 
       const handleFeed = () => {
         SoundEngine.playPop(isMuted);
-        if (clicks < 10) setClicks(c => c + 1);
+        if(clicks < 10) setClicks(c => c + 1);
       };
 
       const isSelectionComplete = baseTopics.length === 2;
 
-      // 7행 × 6열에서 중앙 4칸을 비워 이름표 공간 확보
+      // 이름표를 가리지 않는 바둑판 배경 (정중앙 뚫기)
       const bgGrid = useMemo(() => {
-        const cells = [];
-        let tIdx = 0;
-        const topicsToUse = allTopics.filter(
-          t => !baseTopics.find(bt => bt.id === t.id)
-        );
-
-        for (let r = 0; r < 7; r++) {
-          for (let c = 0; c < 6; c++) {
-            if (r === 3 && c >= 1 && c <= 4) {
-              cells.push({ isHole: true, id: `hole-${r}-${c}` });
-            } else {
-              cells.push({
-                isHole: false,
-                topic: topicsToUse[tIdx++],
-                id: `bg-${r}-${c}`
-              });
-            }
-          }
-        }
-
-        return cells;
+         const cells = [];
+         let tIdx = 0;
+         const topicsToUse = allTopics.filter(t => !baseTopics.find(bt => bt.id === t.id));
+         for(let r=0; r<7; r++) {
+           for(let c=0; c<6; c++) {
+             // 화면 정중앙 이름표 공간 (행 3, 열 1~4) 은 이모지를 넣지 않음
+             if (r === 3 && c >= 1 && c <= 4) {
+                 cells.push({ isHole: true, id: `hole-${r}-${c}` });
+             } else {
+                 cells.push({ isHole: false, topic: topicsToUse[tIdx++], id: `bg-${r}-${c}` });
+             }
+           }
+         }
+         return cells;
       }, [baseTopics]);
 
       return (
         <div className="flex flex-col items-center p-6 w-full animate-pop">
           {!isSelectionComplete || !simStarted ? (
             <div className="w-full flex flex-col items-center">
-              <h2 className="text-3xl font-bold text-pink-600 bg-pink-100 px-8 py-4 rounded-full shadow-md mb-8">
-                🫧 미션 3: 나의 필터 버블 체험
-              </h2>
-
+              <h2 className="text-3xl font-bold text-pink-600 bg-pink-100 px-8 py-4 rounded-full shadow-md mb-8">🫧 미션 3: 나의 필터 버블 체험</h2>
               <div className="bg-white p-8 rounded-3xl shadow-xl border-4 border-pink-300 text-center max-w-5xl w-full relative">
-                <input
-                  type="text"
-                  value={inputName}
-                  onChange={e => setInputName(e.target.value)}
-                  placeholder="이름 (예: 홍길동)"
-                  className="mb-6 w-64 border-b-4 border-pink-400 px-4 py-2 text-2xl font-black text-center bg-gray-50 rounded-t-xl outline-none"
-                />
+                <input type="text" value={inputName} onChange={(e)=>setInputName(e.target.value)} placeholder="이름 (예: 홍길동)" className="mb-2 w-64 border-b-4 border-pink-400 px-4 py-2 text-2xl font-black text-center bg-gray-50 rounded-t-xl outline-none" />
+                {errorMsg && <p className="text-red-500 font-bold mb-4 animate-bounce">{errorMsg}</p>}
+                {!errorMsg && <div className="h-6 mb-4"></div>}
 
-                <h3 className="text-xl font-black mb-2">
-                  내가 가장 좋아하는 주제 <span className="text-pink-600 text-2xl">2개</span> 고르기
-                </h3>
-                <p className="text-sm font-bold text-pink-500 mb-6">
-                  (선택됨: {baseTopics.length} / 2)
-                </p>
+                <h3 className="text-xl font-black mb-2">내가 가장 좋아하는 주제 <span className="text-pink-600 text-2xl">2개</span> 고르기</h3>
+                <p className="text-sm font-bold text-pink-500 mb-6">(선택됨: {baseTopics.length} / 2)</p>
 
                 <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 gap-2 h-[400px] overflow-y-auto p-2 border-2 border-gray-100 rounded-xl bg-gray-50">
                   {allTopics.map(topic => {
                     const isSelected = baseTopics.find(t => t.id === topic.id);
-
                     return (
-                      <button
-                        key={topic.id}
-                        onClick={() => handleSelect(topic)}
-                        className={`flex flex-col items-center p-2 rounded-xl border-4 transition-all transform hover:scale-105 ${
-                          isSelected
-                            ? 'border-pink-500 bg-pink-100'
-                            : 'border-gray-200 bg-white'
-                        }`}
-                      >
-                        <span className="text-3xl mb-1">{topic.icon}</span>
-                        <span className="text-[10px] font-bold break-keep">{topic.label}</span>
+                      <button key={topic.id} onClick={() => handleSelect(topic)} className={`flex flex-col items-center p-2 rounded-xl border-4 transition-all transform hover:scale-105 ${isSelected ? 'border-pink-500 bg-pink-100' : 'border-gray-200 bg-white'}`}>
+                        <span className="text-3xl mb-1">{topic.icon}</span><span className="text-[10px] font-bold break-keep">{topic.label}</span>
                       </button>
-                    );
+                    )
                   })}
                 </div>
 
                 {isSelectionComplete && !simStarted && (
                   <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-3xl animate-fade-in z-20">
-                    <div className="bg-white p-8 rounded-3xl shadow-2xl border-4 border-pink-400 flex flex-col items-center">
-                      <p className="text-2xl font-black mb-4 text-gray-800">
-                        선택 완료! 알고리즘이 가동됩니다.
-                      </p>
-
-                      <div className="flex gap-6 mb-6">
-                        <div className="text-5xl bg-pink-50 p-4 rounded-full border-2 border-pink-200 shadow-sm">
-                          {baseTopics[0].icon}
+                     <div className="bg-white p-8 rounded-3xl shadow-2xl border-4 border-pink-400 flex flex-col items-center">
+                        <p className="text-2xl font-black mb-4 text-gray-800">선택 완료! 알고리즘이 가동됩니다.</p>
+                        <div className="flex gap-6 mb-6">
+                            <div className="text-5xl bg-pink-50 p-4 rounded-full border-2 border-pink-200 shadow-sm">{baseTopics[0].icon}</div>
+                            <div className="text-5xl bg-pink-50 p-4 rounded-full border-2 border-pink-200 shadow-sm">{baseTopics[1].icon}</div>
                         </div>
-                        <div className="text-5xl bg-pink-50 p-4 rounded-full border-2 border-pink-200 shadow-sm">
-                          {baseTopics[1].icon}
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => setSimStarted(true)}
-                        className="bg-pink-500 hover:bg-pink-600 text-white font-black text-2xl py-4 px-12 rounded-full shadow-xl border-b-4 border-pink-700 active:translate-y-1 active:border-b-0 animate-bounce"
-                      >
-                        시뮬레이션 시작! ▶
-                      </button>
-                    </div>
+                        <button onClick={() => setSimStarted(true)} className="bg-pink-500 hover:bg-pink-600 text-white font-black text-2xl py-4 px-12 rounded-full shadow-xl border-b-4 border-pink-700 active:translate-y-1 active:border-b-0 animate-bounce">
+                            시뮬레이션 시작! ▶
+                        </button>
+                     </div>
                   </div>
                 )}
               </div>
             </div>
           ) : (
             <div className="w-full flex flex-col items-center">
-              <h2 className="text-3xl font-bold text-pink-600 bg-pink-100 px-8 py-4 rounded-full mb-4 shadow-sm">
-                🫧 미션 3: 나의 필터 버블 체험
-              </h2>
-
+              <h2 className="text-3xl font-bold text-pink-600 bg-pink-100 px-8 py-4 rounded-full mb-4 shadow-sm">🫧 미션 3: 나의 필터 버블 체험</h2>
               <div className="relative w-full max-w-4xl bg-white rounded-[3rem] border-8 border-gray-200 h-[600px] flex flex-col items-center justify-center overflow-hidden shadow-2xl transition-all duration-700">
-                <div
-                  className="absolute inset-0 z-0 grid grid-cols-6 grid-rows-7 transition-all duration-700 pointer-events-none select-none"
-                  style={{
-                    filter: `grayscale(${clicks * 10}%) blur(${clicks * 0.8}px)`
-                  }}
-                >
-                  {bgGrid.map(cell => {
-                    if (cell.isHole) return <div key={cell.id}></div>;
 
-                    return (
-                      <div key={cell.id} className="flex items-center justify-center pointer-events-none select-none">
-                        <span className="text-4xl sm:text-5xl opacity-70 pointer-events-none select-none drop-shadow-sm">
-                          {cell.topic && cell.topic.icon}
-                        </span>
-                      </div>
-                    );
+                {/* 배경 그리드 (정중앙 뚫림). Optional Chaining 제거 */}
+                <div className="absolute inset-0 z-0 grid grid-cols-6 grid-rows-7 transition-all duration-700 pointer-events-none select-none" style={{ filter: `grayscale(${clicks * 10}%) blur(${clicks * 0.8}px)` }}>
+                  {bgGrid.map(cell => {
+                     if (cell.isHole) return <div key={cell.id}></div>;
+                     return (
+                       <div key={cell.id} className="flex items-center justify-center pointer-events-none select-none">
+                         <span className="text-4xl sm:text-5xl opacity-70 pointer-events-none select-none drop-shadow-sm">{cell.topic ? cell.topic.icon : ''}</span>
+                       </div>
+                     );
                   })}
                 </div>
 
-                <div
-                  className="absolute inset-0 z-10 pointer-events-none transition-all duration-700"
-                  style={{
-                    background: `radial-gradient(circle, transparent 20%, rgba(0,0,0,${clicks * 0.09}) 100%)`,
-                    backdropFilter: `blur(${clicks * 0.25}px)`
-                  }}
-                ></div>
+                <div className="absolute inset-0 z-10 pointer-events-none transition-all duration-700" style={{ background: `radial-gradient(circle, transparent 20%, rgba(0,0,0,${clicks * 0.09}) 100%)`, backdropFilter: `blur(${clicks * 0.25}px)` }}></div>
 
+                {/* 사용자 이름표 */}
                 <div className="absolute z-20 flex flex-col items-center justify-center px-10 py-4 bg-white/95 backdrop-blur-md rounded-full border-2 border-pink-200 shadow-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                  <span className="text-3xl font-black text-pink-600 pointer-events-none select-none tracking-wider">
-                    {userName}
-                  </span>
+                  <span className="text-3xl font-black text-pink-600 pointer-events-none select-none tracking-wider">{userName}</span>
                 </div>
 
                 {safePositions.slice(0, clicks * 3).map((pos, idx) => {
                   const topic = baseTopics[idx % 2];
-
                   return (
-                    <div
-                      key={idx}
-                      className="absolute animate-pop flex flex-col items-center justify-center glass-bubble w-20 h-20 sm:w-24 sm:h-24 z-30 shadow-lg select-none"
-                      style={{
-                        left: `calc(${pos.x}% - 40px)`,
-                        top: `calc(${pos.y}% - 40px)`
-                      }}
-                    >
-                      <span className="text-5xl drop-shadow-md pointer-events-none select-none">
-                        {topic.icon}
-                      </span>
+                    <div key={idx} className="absolute animate-pop flex flex-col items-center justify-center glass-bubble w-20 h-20 sm:w-24 sm:h-24 z-30 shadow-lg select-none" style={{ left: `calc(${pos.x}% - 40px)`, top: `calc(${pos.y}% - 40px)` }}>
+                        <span className="text-5xl drop-shadow-md pointer-events-none select-none">{topic.icon}</span>
                     </div>
-                  );
+                  )
                 })}
 
                 {clicks < 10 ? (
-                  <button
-                    onClick={handleFeed}
-                    className="absolute bottom-8 z-40 bg-pink-500 hover:bg-pink-600 text-white font-black text-xl sm:text-2xl py-4 px-10 rounded-full shadow-xl border-b-8 border-pink-700 active:translate-y-2 active:border-b-0 transition-transform"
-                  >
-                    {clicks === 0
-                      ? '▶ 첫 번째 영상 시청하기'
-                      : `▶ 계속 시청하기 (${clicks}/10)`}
+                  <button onClick={handleFeed} className="absolute bottom-8 z-40 bg-pink-500 hover:bg-pink-600 text-white font-black text-xl sm:text-2xl py-4 px-10 rounded-full shadow-xl border-b-8 border-pink-700 active:translate-y-2 active:border-b-0 transition-transform">
+                    {clicks === 0 ? '▶ 첫 번째 영상 시청하기' : `▶ 계속 시청하기 (${clicks}/10)`}
                   </button>
                 ) : (
                   <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm animate-pop">
                     <div className="bg-white p-8 rounded-3xl border-8 border-red-500 shadow-2xl text-center w-11/12 max-w-md">
                       <span className="text-6xl mb-4 block animate-bounce">🚨</span>
-                      <h3 className="text-3xl font-black text-red-600 mb-4">
-                        필터 버블에 갇혔습니다!
-                      </h3>
-                      <p className="text-gray-700 font-bold mb-4 leading-relaxed break-keep">
-                        알고리즘이 주는 관심사만 편식하다 보니<br/>
-                        나머지 세상이 모두 안 보이게 되었습니다.
-                      </p>
-                      <PasswordUnlock
-                        checked={checked}
-                        setChecked={setChecked}
-                        isUnlocked={isUnlocked}
-                        onUnlock={onUnlock}
-                        password="fl"
-                        checkText="갇힌 이유를 알겠습니다!"
-                      />
+                      <h3 className="text-3xl font-black text-red-600 mb-4">필터 버블에 갇혔습니다!</h3>
+                      <p className="text-gray-700 font-bold mb-4 leading-relaxed break-keep">알고리즘이 주는 관심사만 편식하다 보니<br/>나머지 세상이 모두 안 보이게 되었습니다.</p>
+                      <PasswordUnlock checked={checked} setChecked={setChecked} isUnlocked={isUnlocked} onUnlock={onUnlock} password="fl" checkText="갇힌 이유를 알겠습니다!" />
                     </div>
                   </div>
                 )}
@@ -1008,62 +678,58 @@
 
       const [sendChecked, setSendChecked] = useState(false);
       const [isSending, setIsSending] = useState(false);
+      const [errorMsg, setErrorMsg] = useState('');
 
-      const availableTopics = allTopics.filter(
-        t => !baseTopics.find(bt => bt.id === t.id)
-      );
+      const availableTopics = allTopics.filter(t => !baseTopics.find(bt => bt.id === t.id));
 
       useEffect(() => {
-        if (baseTopics.length === 2) {
-          setBubbles(
-            Array.from({length: 30}).map((_, i) => {
-              let bx, by;
+        if(baseTopics.length === 2) {
+          setBubbles(Array.from({length: 30}).map((_, i) => {
+            let bx, by;
+            do {
+              bx = 5 + Math.random() * 85;
+              by = 5 + Math.random() * 80;
+            } while (bx > 35 && bx < 65 && by > 35 && by < 65); // 중앙 피하기
 
-              do {
-                bx = 5 + Math.random() * 85;
-                by = 5 + Math.random() * 80;
-              } while (bx > 35 && bx < 65 && by > 35 && by < 65);
-
-              return {
-                id: i,
-                x: bx,
-                y: by,
-                hp: 3,
-                topic: baseTopics[i % 2]
-              };
-            })
-          );
+            return {
+              id: i,
+              x: bx,
+              y: by,
+              hp: 3,
+              topic: baseTopics[i % 2]
+            };
+          }));
         }
       }, [baseTopics]);
 
       const handlePop = (id) => {
         SoundEngine.playPop(isMuted);
-        const newBubbles = bubbles.map(
-          b => b.id === id ? { ...b, hp: b.hp - 1 } : b
-        );
+        const newBubbles = bubbles.map(b => b.id === id ? { ...b, hp: b.hp - 1 } : b);
         setBubbles(newBubbles);
-
-        if (newBubbles.every(b => b.hp <= 0)) {
-          setTimeout(() => setShowPopup(true), 1500);
-        }
+        if (newBubbles.every(b => b.hp <= 0)) setTimeout(() => setShowPopup(true), 1500);
       };
 
       const handleSelectPartnerTopic = (topic) => {
-        if (partnerTopics.find(t => t.id === topic.id)) {
-          setPartnerTopics(partnerTopics.filter(t => t.id !== topic.id));
-        } else if (partnerTopics.length < 3) {
-          setPartnerTopics([...partnerTopics, topic]);
-        }
+        if (partnerTopics.find(t => t.id === topic.id)) setPartnerTopics(partnerTopics.filter(t => t.id !== topic.id));
+        else if (partnerTopics.length < 3) setPartnerTopics([...partnerTopics, topic]);
       };
 
       const handleSendToSupabase = async () => {
-        if (!partnerName.trim() || !reasons.r1 || !reasons.r2 || !reasons.r3) {
-          alert("빈칸을 모두 채워주세요!");
-          return;
+        if(!partnerName.trim() || !reasons.r1 || !reasons.r2 || !reasons.r3) {
+            setErrorMsg("빈칸을 모두 채워주세요!");
+            setTimeout(() => setErrorMsg(''), 2500);
+            return;
         }
 
-        setIsSending(true);
+        // Supabase 인스턴스 보호 처리
+        if (!supabase) {
+            setErrorMsg("데이터베이스 연결에 실패했습니다. 인터넷 연결을 확인해주세요.");
+            setTimeout(() => setErrorMsg(''), 4000);
+            return;
+        }
 
+        setErrorMsg('');
+        setIsSending(true);
         try {
           const combinedBaseTopic = `${baseTopics[0].label}|${baseTopics[1].label}`;
 
@@ -1078,156 +744,88 @@
             topic_3: partnerTopics[2] ? partnerTopics[2].label : '',
             reason_3: reasons.r3
           }]);
-
           if (error) throw error;
 
-          confetti({
-            particleCount: 200,
-            spread: 100,
-            origin: { y: 0.6 },
-            zIndex: 9999
-          });
-
+          if (typeof confetti === 'function') {
+            confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, zIndex: 9999 });
+          }
           onUnlock();
           setStage('done');
         } catch (error) {
           console.error(error);
-          alert(`데이터베이스 오류 발생!\n(${error.message})`);
+          setErrorMsg(`데이터베이스 오류 발생! (${error.message})`);
+          setTimeout(() => setErrorMsg(''), 3000);
         } finally {
           setIsSending(false);
         }
       };
 
       const bgGrid = useMemo(() => {
-        const cells = [];
-        let tIdx = 0;
-        const topicsToUse = allTopics.filter(
-          t => !baseTopics.find(bt => bt.id === t.id)
-        );
-
-        for (let r = 0; r < 7; r++) {
-          for (let c = 0; c < 6; c++) {
-            if (r === 3 && c >= 1 && c <= 4) {
-              cells.push({ isHole: true, id: `hole-${r}-${c}` });
-            } else {
-              cells.push({
-                isHole: false,
-                topic: topicsToUse[tIdx++],
-                id: `bg-${r}-${c}`
-              });
-            }
-          }
-        }
-
-        return cells;
+         const cells = [];
+         let tIdx = 0;
+         const topicsToUse = allTopics.filter(t => !baseTopics.find(bt => bt.id === t.id));
+         for(let r=0; r<7; r++) {
+           for(let c=0; c<6; c++) {
+             // 화면 정중앙 뚫기
+             if (r === 3 && c >= 1 && c <= 4) {
+                 cells.push({ isHole: true, id: `hole-${r}-${c}` });
+             } else {
+                 cells.push({ isHole: false, topic: topicsToUse[tIdx++], id: `bg-${r}-${c}` });
+             }
+           }
+         }
+         return cells;
       }, [baseTopics]);
 
       if (stage === 'popping') {
         const darkLevel = bubbles.filter(b => b.hp > 0).length / 30;
-
         return (
           <div className="flex flex-col items-center p-6 w-full animate-pop">
-            <h2 className="text-3xl font-bold text-teal-600 bg-teal-100 px-8 py-4 rounded-full shadow-md mb-4">
-              🪡 미션 4: 짝꿍 구출 작전
-            </h2>
-
+            <h2 className="text-3xl font-bold text-teal-600 bg-teal-100 px-8 py-4 rounded-full shadow-md mb-4">🪡 미션 4: 짝꿍 구출 작전</h2>
             <div className="bg-white p-6 rounded-3xl shadow-xl border-4 border-yellow-400 w-full max-w-4xl mb-6 text-center animate-bounce">
-              <h3 className="text-3xl font-black text-gray-800">
-                ⚠️ 비상! 짝꿍과 태블릿을 바꾸세요!
-              </h3>
-              <p className="text-xl font-bold text-gray-600 mt-2">
-                짝꿍의 버블들을 <span className="text-red-500">여러 번 콕콕 찔러서</span> 구출해주세요!
-              </p>
+              <h3 className="text-3xl font-black text-gray-800">⚠️ 비상! 짝꿍과 태블릿을 바꾸세요!</h3>
+              <p className="text-xl font-bold text-gray-600 mt-2">짝꿍의 버블들을 <span className="text-red-500">여러 번 콕콕 찔러서</span> 구출해주세요!</p>
             </div>
-
             <div className="relative w-full max-w-4xl bg-white rounded-[3rem] border-8 border-gray-200 h-[600px] overflow-hidden shadow-2xl transition-all duration-300">
-              <div
-                className="absolute inset-0 z-0 grid grid-cols-6 grid-rows-7 transition-all duration-300 pointer-events-none select-none"
-                style={{
-                  filter: `grayscale(${darkLevel * 100}%) blur(${darkLevel * 8}px)`
-                }}
-              >
-                {bgGrid.map(cell => {
-                  if (cell.isHole) return <div key={cell.id}></div>;
 
-                  return (
-                    <div key={cell.id} className="flex items-center justify-center pointer-events-none select-none">
-                      <span className="text-4xl sm:text-5xl opacity-100 pointer-events-none select-none drop-shadow-sm">
-                        {cell.topic && cell.topic.icon}
-                      </span>
-                    </div>
-                  );
-                })}
+              <div className="absolute inset-0 z-0 grid grid-cols-6 grid-rows-7 transition-all duration-300 pointer-events-none select-none" style={{ filter: `grayscale(${darkLevel * 100}%) blur(${darkLevel * 8}px)` }}>
+                  {bgGrid.map(cell => {
+                     if (cell.isHole) return <div key={cell.id}></div>;
+                     return (
+                       <div key={cell.id} className="flex items-center justify-center pointer-events-none select-none">
+                         <span className="text-4xl sm:text-5xl opacity-100 pointer-events-none select-none drop-shadow-sm">{cell.topic ? cell.topic.icon : ''}</span>
+                       </div>
+                     );
+                  })}
               </div>
 
-              <div
-                className="absolute inset-0 z-10 pointer-events-none transition-all duration-300"
-                style={{
-                  background: `radial-gradient(circle, transparent 20%, rgba(0,0,0,${darkLevel * 0.9}) 100%)`,
-                  backdropFilter: `blur(${darkLevel * 3}px)`
-                }}
-              ></div>
-
+              <div className="absolute inset-0 z-10 pointer-events-none transition-all duration-300" style={{ background: `radial-gradient(circle, transparent 20%, rgba(0,0,0,${darkLevel * 0.9}) 100%)`, backdropFilter: `blur(${darkLevel * 3}px)` }}></div>
               <div className="absolute z-20 flex flex-col items-center justify-center px-10 py-4 bg-white/95 backdrop-blur-md rounded-full border-2 border-pink-200 shadow-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                <span className="text-2xl font-black text-pink-600 tracking-wider pointer-events-none select-none">
-                  {userName}
-                </span>
+                <span className="text-2xl font-black text-pink-600 tracking-wider pointer-events-none select-none">{userName}</span>
               </div>
 
               {bubbles.map(b => {
-                if (b.hp <= 0) {
-                  return (
-                    <div
-                      key={b.id}
-                      className="absolute bubble-dead w-16 h-16 sm:w-20 sm:h-20 glass-bubble"
-                      style={{ left: `${b.x}%`, top: `${b.y}%` }}
-                    ></div>
-                  );
-                }
-
+                if (b.hp <= 0) return <div key={b.id} className="absolute bubble-dead w-16 h-16 sm:w-20 sm:h-20 glass-bubble" style={{ left: `${b.x}%`, top: `${b.y}%` }}></div>;
                 let hpClass = "animate-float cursor-pointer hover:scale-110 active:scale-95 transition-transform ";
-                if (b.hp === 2) hpClass += "bubble-hp-2";
-                if (b.hp === 1) hpClass += "bubble-hp-1";
-
+                if(b.hp === 2) hpClass += "bubble-hp-2";
+                if(b.hp === 1) hpClass += "bubble-hp-1";
                 return (
-                  <div
-                    key={b.id}
-                    onClick={() => handlePop(b.id)}
-                    className={`absolute flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 glass-bubble z-30 select-none ${hpClass}`}
-                    style={{
-                      left: `calc(${b.x}% - 30px)`,
-                      top: `calc(${b.y}% - 30px)`
-                    }}
-                  >
-                    <span className="text-3xl sm:text-4xl pointer-events-none select-none drop-shadow-md">
-                      {b.topic.icon}
-                    </span>
+                  <div key={b.id} onClick={() => handlePop(b.id)} className={`absolute flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 glass-bubble z-30 select-none ${hpClass}`} style={{ left: `calc(${b.x}% - 30px)`, top: `calc(${b.y}% - 30px)` }}>
+                    <span className="text-3xl sm:text-4xl pointer-events-none select-none drop-shadow-md">{b.topic.icon}</span>
                   </div>
-                );
+                )
               })}
 
               {showPopup && (
                 <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
                   <div className="bg-white p-10 rounded-3xl border-8 border-blue-400 shadow-2xl text-center w-11/12 max-w-xl">
                     <span className="text-7xl mb-4 block animate-bounce">⚠️</span>
-                    <h3 className="text-3xl font-black text-gray-800 mb-4">
-                      버블은 깼지만, 아직 위험해요!
-                    </h3>
-
+                    <h3 className="text-3xl font-black text-gray-800 mb-4">버블은 깼지만, 아직 위험해요!</h3>
                     <p className="text-lg text-gray-700 font-bold leading-relaxed mb-6">
-                      방금 전까지 익숙한 주제들만 시청했기 때문에,<br/>
-                      알고리즘이 심각한 <span className="text-red-500 font-black">'정보 영양실조'</span> 상태입니다.<br/><br/>
-                      다시는 필터 버블이 생기지 않도록,<br/>
-                      짝꿍이 <span className="text-blue-600 font-black">일일 미디어 영양사</span>가 되어서<br/>
-                      다양하게 섞인 건강한 식판을 차려주세요!
+                      방금 전까지 익숙한 주제들만 시청했기 때문에,<br/>알고리즘이 심각한 <span className="text-red-500 font-black">'정보 영양실조'</span> 상태입니다.<br/><br/>
+                      다시는 필터 버블이 생기지 않도록,<br/>짝꿍이 <span className="text-blue-600 font-black">일일 미디어 영양사</span>가 되어서<br/>다양하게 섞인 건강한 식판을 차려주세요!
                     </p>
-
-                    <button
-                      onClick={() => setStage('select')}
-                      className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-2xl shadow-lg transition-all border-b-4 border-blue-700 active:translate-y-1 active:border-b-0 w-full max-w-md"
-                    >
-                      👩‍⚕️ 영양 만점 식판 차려주기
-                    </button>
+                    <button onClick={() => setStage('select')} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-2xl shadow-lg transition-all border-b-4 border-blue-700 active:translate-y-1 active:border-b-0 w-full max-w-md">👩‍⚕️ 영양 만점 식판 차려주기</button>
                   </div>
                 </div>
               )}
@@ -1240,42 +838,21 @@
         return (
           <div className="w-full max-w-5xl mx-auto animate-pop flex flex-col items-center p-6">
             <div className="bg-white p-8 rounded-3xl shadow-xl border-4 border-teal-300 w-full text-center mb-6">
-              <h3 className="text-2xl font-black mb-2">
-                <span className="text-blue-600">미디어 영양사</span>로서 {userName}에게 차려줄 <span className="text-teal-600">새로운 반찬(영상) 3가지</span>를 고르세요!
-              </h3>
-              <p className="text-sm font-bold text-teal-500 mb-6">
-                (선택된 개수: {partnerTopics.length} / 3)
-              </p>
-
+              <h3 className="text-2xl font-black mb-2"><span className="text-blue-600">미디어 영양사</span>로서 {userName}에게 차려줄 <span className="text-teal-600">새로운 반찬(영상) 3가지</span>를 고르세요!</h3>
+              <p className="text-sm font-bold text-teal-500 mb-6">(선택된 개수: {partnerTopics.length} / 3)</p>
               <div className="flex flex-wrap justify-center content-start gap-3 h-96 overflow-y-auto p-4 bg-gray-50 border-2 border-gray-100 rounded-xl mx-auto w-full">
                 {availableTopics.map(topic => {
-                  const isSel = partnerTopics.find(t => t.id === topic.id);
-
+                  const isSel = partnerTopics.find(t=>t.id===topic.id);
                   return (
-                    <button
-                      key={topic.id}
-                      onClick={() => handleSelectPartnerTopic(topic)}
-                      className={`flex flex-col items-center p-2 rounded-xl border-4 transition-all transform hover:scale-105 ${
-                        isSel
-                          ? 'border-teal-500 bg-teal-50 scale-105'
-                          : 'border-gray-200 bg-white'
-                      }`}
-                    >
-                      <span className="text-3xl mb-1">{topic.icon}</span>
-                      <span className="text-[10px] font-bold break-keep">{topic.label}</span>
+                    <button key={topic.id} onClick={() => handleSelectPartnerTopic(topic)} className={`flex flex-col items-center p-2 rounded-xl border-4 transition-all transform hover:scale-105 ${isSel ? 'border-teal-500 bg-teal-50 scale-105' : 'border-gray-200 bg-white'}`}>
+                      <span className="text-3xl mb-1">{topic.icon}</span><span className="text-[10px] font-bold break-keep">{topic.label}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
-
             {partnerTopics.length === 3 && (
-              <button
-                onClick={() => setStage('write')}
-                className="bg-teal-500 hover:bg-teal-600 text-white font-black text-xl py-4 px-12 rounded-full shadow-xl animate-bounce"
-              >
-                처방 완료하기! ✨
-              </button>
+              <button onClick={() => setStage('write')} className="bg-teal-500 hover:bg-teal-600 text-white font-black text-xl py-4 px-12 rounded-full shadow-xl animate-bounce">처방 완료하기! ✨</button>
             )}
           </div>
         );
@@ -1294,38 +871,20 @@
 
                 <div className="flex justify-between gap-3 sm:gap-6 w-full">
                   {[partnerTopics[0], partnerTopics[1], partnerTopics[2]].map((t, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-green-50 border-4 border-green-200 rounded-[1.5rem] w-1/3 aspect-square flex flex-col items-center justify-center p-2 shadow-[inset_0_4px_10px_rgba(0,0,0,0.05)] relative"
-                    >
-                      <span className="absolute -top-3 bg-green-500 text-white text-[10px] sm:text-xs font-black px-2 py-1 rounded-full shadow-md z-10 whitespace-nowrap">
-                        ✨ 친구의 추천
-                      </span>
-                      <span className="text-5xl sm:text-6xl mb-2 sm:mb-4 drop-shadow-md mt-2">
-                        {t && t.icon}
-                      </span>
-                      <span className="bg-white border border-green-200 rounded-full px-2 py-1 text-[10px] sm:text-sm font-bold text-green-700 w-11/12 text-center truncate shadow-sm">
-                        {t && t.label}
-                      </span>
+                    <div key={idx} className="bg-green-50 border-4 border-green-200 rounded-[1.5rem] w-1/3 aspect-square flex flex-col items-center justify-center p-2 shadow-[inset_0_4px_10px_rgba(0,0,0,0.05)] relative">
+                      <span className="absolute -top-3 bg-green-500 text-white text-[10px] sm:text-xs font-black px-2 py-1 rounded-full shadow-md z-10 whitespace-nowrap">✨ 친구의 추천</span>
+                      <span className="text-5xl sm:text-6xl mb-2 sm:mb-4 drop-shadow-md mt-2">{t ? t.icon : ''}</span>
+                      <span className="bg-white border border-green-200 rounded-full px-2 py-1 text-[10px] sm:text-sm font-bold text-green-700 w-11/12 text-center truncate shadow-sm">{t ? t.label : ''}</span>
                     </div>
                   ))}
                 </div>
 
                 <div className="flex justify-between gap-3 sm:gap-6 w-full mt-2">
                   {[baseTopics[0], baseTopics[1]].map((t, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-slate-100 border-4 border-slate-200 rounded-[2rem] w-1/2 aspect-[4/3] flex flex-col items-center justify-center p-4 shadow-[inset_0_4px_10px_rgba(0,0,0,0.05)] relative"
-                    >
-                      <span className="absolute -top-3 bg-slate-500 text-white text-[10px] sm:text-xs font-black px-3 py-1 rounded-full shadow-md z-10 whitespace-nowrap">
-                        🍚 원래 내 취향
-                      </span>
-                      <span className="text-7xl sm:text-8xl mb-3 sm:mb-6 drop-shadow-md mt-2">
-                        {t && t.icon}
-                      </span>
-                      <span className="bg-white border border-slate-200 rounded-full px-4 py-2 text-xs sm:text-base font-bold text-slate-700 w-10/12 text-center truncate shadow-sm">
-                        {t && t.label}
-                      </span>
+                    <div key={idx} className="bg-slate-100 border-4 border-slate-200 rounded-[2rem] w-1/2 aspect-[4/3] flex flex-col items-center justify-center p-4 shadow-[inset_0_4px_10px_rgba(0,0,0,0.05)] relative">
+                      <span className="absolute -top-3 bg-slate-500 text-white text-[10px] sm:text-xs font-black px-3 py-1 rounded-full shadow-md z-10 whitespace-nowrap">🍚 원래 내 취향</span>
+                      <span className="text-7xl sm:text-8xl mb-3 sm:mb-6 drop-shadow-md mt-2">{t ? t.icon : ''}</span>
+                      <span className="bg-white border border-slate-200 rounded-full px-4 py-2 text-xs sm:text-base font-bold text-slate-700 w-10/12 text-center truncate shadow-sm">{t ? t.label : ''}</span>
                     </div>
                   ))}
                 </div>
@@ -1333,207 +892,85 @@
             </div>
 
             <div className="bg-white p-8 rounded-3xl shadow-2xl border-4 border-blue-400 w-full mb-8">
-              <h3 className="text-2xl font-black text-center mb-6 text-blue-800">
-                📝 미디어 처방전 작성하기
-              </h3>
-
-              <div className="mb-6 bg-blue-50 p-4 rounded-xl border-2 border-blue-100">
-                <p className="font-bold text-gray-700 text-lg">
-                  영양사(내 이름)를 적어주세요:
-                </p>
-                <input
-                  type="text"
-                  value={partnerName}
-                  onChange={e => setPartnerName(e.target.value)}
-                  placeholder=""
-                  className="w-full mt-2 p-3 border-2 border-blue-200 rounded-lg font-bold text-xl outline-none focus:border-blue-500"
-                />
+              <h3 className="text-2xl font-black text-center mb-6 text-blue-800">📝 미디어 처방전 작성하기</h3>
+              <div className="mb-6 bg-blue-50 p-4 rounded-xl border-2 border-blue-100 relative">
+                <p className="font-bold text-gray-700 text-lg">영양사(내 이름)를 적어주세요:</p>
+                <input type="text" value={partnerName} onChange={e => setPartnerName(e.target.value)} placeholder="" className="w-full mt-2 p-3 border-2 border-blue-200 rounded-lg font-bold text-xl outline-none focus:border-blue-500" />
               </div>
-
               <div className="space-y-4 mb-8">
-                <p className="font-bold text-gray-800 text-xl">
-                  {userName}에게 이 영상들을 추천해 준 이유는 무엇인가요?
-                </p>
-
+                <p className="font-bold text-gray-800 text-xl">{userName}에게 이 영상들을 추천해 준 이유는 무엇인가요?</p>
                 <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-4">
-                  <p className="font-black text-blue-600 mb-2 text-lg">
-                    1) {partnerTopics[0] && partnerTopics[0].icon} {partnerTopics[0] && partnerTopics[0].label}
-                  </p>
-                  <textarea
-                    value={reasons.r1}
-                    onChange={e => setReasons({...reasons, r1: e.target.value})}
-                    className="w-full p-3 rounded-lg border-2 border-gray-300 resize-none outline-none focus:border-blue-400 h-24 font-bold"
-                  ></textarea>
+                  <p className="font-black text-blue-600 mb-2 text-lg">1) {partnerTopics[0] ? partnerTopics[0].icon : ''} {partnerTopics[0] ? partnerTopics[0].label : ''}</p>
+                  <textarea value={reasons.r1} onChange={e => setReasons({...reasons, r1: e.target.value})} className="w-full p-3 rounded-lg border-2 border-gray-300 resize-none outline-none focus:border-blue-400 h-24 font-bold"></textarea>
                 </div>
-
                 <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-4">
-                  <p className="font-black text-blue-600 mb-2 text-lg">
-                    2) {partnerTopics[1] && partnerTopics[1].icon} {partnerTopics[1] && partnerTopics[1].label}
-                  </p>
-                  <textarea
-                    value={reasons.r2}
-                    onChange={e => setReasons({...reasons, r2: e.target.value})}
-                    className="w-full p-3 rounded-lg border-2 border-gray-300 resize-none outline-none focus:border-blue-400 h-24 font-bold"
-                  ></textarea>
+                  <p className="font-black text-blue-600 mb-2 text-lg">2) {partnerTopics[1] ? partnerTopics[1].icon : ''} {partnerTopics[1] ? partnerTopics[1].label : ''}</p>
+                  <textarea value={reasons.r2} onChange={e => setReasons({...reasons, r2: e.target.value})} className="w-full p-3 rounded-lg border-2 border-gray-300 resize-none outline-none focus:border-blue-400 h-24 font-bold"></textarea>
                 </div>
-
                 <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-4">
-                  <p className="font-black text-blue-600 mb-2 text-lg">
-                    3) {partnerTopics[2] && partnerTopics[2].icon} {partnerTopics[2] && partnerTopics[2].label}
-                  </p>
-                  <textarea
-                    value={reasons.r3}
-                    onChange={e => setReasons({...reasons, r3: e.target.value})}
-                    className="w-full p-3 rounded-lg border-2 border-gray-300 resize-none outline-none focus:border-blue-400 h-24 font-bold"
-                  ></textarea>
+                  <p className="font-black text-blue-600 mb-2 text-lg">3) {partnerTopics[2] ? partnerTopics[2].icon : ''} {partnerTopics[2] ? partnerTopics[2].label : ''}</p>
+                  <textarea value={reasons.r3} onChange={e => setReasons({...reasons, r3: e.target.value})} className="w-full p-3 rounded-lg border-2 border-gray-300 resize-none outline-none focus:border-blue-400 h-24 font-bold"></textarea>
                 </div>
               </div>
+
+              {errorMsg && <p className="text-red-500 font-bold mb-4 text-center animate-bounce">{errorMsg}</p>}
 
               {isSending ? (
-                <div className="text-center font-bold text-blue-600 py-4 bg-blue-50 rounded-xl border-2 border-blue-200 animate-pulse">
-                  서버로 안전하게 전송 중입니다... 📡
-                </div>
+                <div className="text-center font-bold text-blue-600 py-4 bg-blue-50 rounded-xl border-2 border-blue-200 animate-pulse">서버로 안전하게 전송 중입니다... 📡</div>
               ) : (
-                <PasswordUnlock
-                  checked={sendChecked}
-                  setChecked={setSendChecked}
-                  isUnlocked={false}
-                  onUnlock={handleSendToSupabase}
-                  password="wma"
-                  checkText="🚀 선생님께 전송하기"
-                />
+                <PasswordUnlock checked={sendChecked} setChecked={setSendChecked} isUnlocked={false} onUnlock={handleSendToSupabase} password="wma" checkText="🚀 선생님께 전송하기" />
               )}
             </div>
           </div>
         );
       }
 
-      if (stage === 'done') {
-        return (
-          <div className="text-center py-20 animate-pop">
-            <h2 className="text-4xl font-black text-green-600">
-              🎉 전송 완료! 선생님 화면을 보세요!
-            </h2>
-          </div>
-        );
-      }
+      if (stage === 'done') return <div className="text-center py-20 animate-pop"><h2 className="text-4xl font-black text-green-600">🎉 전송 완료! 선생님 화면을 보세요!</h2></div>;
     };
 
     function App() {
       const [currentStage, setCurrentStage] = useState(1);
-      const [unlocked, setUnlocked] = useState({
-        1: false,
-        2: false,
-        3: false,
-        4: false
-      });
+      const [unlocked, setUnlocked] = useState({ 1: false, 2: false, 3: false, 4: false });
       const [baseTopics, setBaseTopics] = useState([]);
       const [userName, setUserName] = useState('');
       const [isMuted, setIsMuted] = useState(false);
 
-      const unlockStage = (stage) => {
-        setUnlocked(prev => ({ ...prev, [stage]: true }));
-      };
-
+      const unlockStage = (stage) => setUnlocked(prev => ({ ...prev, [stage]: true }));
       const canGoNext = () => unlocked[currentStage];
 
       return (
         <div className="min-h-screen pb-32 relative">
           <header className="bg-white shadow-md p-5 sticky top-0 z-40 border-b-4 border-gray-100 flex items-center justify-between">
-            <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-600 shrink-0">
-              ✨ 알고리즘 윤리
-            </h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-600 shrink-0">✨ 알고리즘 윤리</h1>
 
             <div className="flex items-center gap-3 sm:gap-6">
-              <button
-                onClick={() => setIsMuted(!isMuted)}
-                className={`text-xl sm:text-2xl w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm ${
-                  isMuted
-                    ? 'bg-red-100 text-red-500 border border-red-200'
-                    : 'bg-blue-50 text-blue-500 border border-blue-200 hover:bg-blue-100'
-                }`}
-                title={isMuted ? "소리 켜기" : "소리 끄기"}
-              >
+              <button onClick={() => setIsMuted(!isMuted)} className={`text-xl sm:text-2xl w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm ${isMuted ? 'bg-red-100 text-red-500 border border-red-200' : 'bg-blue-50 text-blue-500 border border-blue-200 hover:bg-blue-100'}`} title={isMuted ? "소리 켜기" : "소리 끄기"}>
                 {isMuted ? '🔇' : '🔊'}
               </button>
 
               <div className="flex gap-2 sm:gap-3">
                 {[1, 2, 3, 4].map(s => (
-                  <div
-                    key={s}
-                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-black text-sm sm:text-base transition-all ${
-                      currentStage === s
-                        ? "bg-blue-600 text-white scale-110 shadow-lg"
-                        : currentStage > s
-                          ? "bg-green-500 text-white"
-                          : "bg-gray-200 text-gray-500"
-                    }`}
-                  >
-                    {s}
-                  </div>
+                  <div key={s} className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-black text-sm sm:text-base transition-all ${currentStage === s ? "bg-blue-600 text-white scale-110 shadow-lg" : currentStage > s ? "bg-green-500 text-white" : "bg-gray-200 text-gray-500"}`}>{s}</div>
                 ))}
               </div>
             </div>
           </header>
-
           <main className="pt-8 max-w-6xl mx-auto">
-            {currentStage === 1 && (
-              <Mission1
-                isUnlocked={unlocked[1]}
-                onUnlock={() => unlockStage(1)}
-              />
-            )}
-
-            {currentStage === 2 && (
-              <Mission2
-                isUnlocked={unlocked[2]}
-                onUnlock={() => unlockStage(2)}
-                isMuted={isMuted}
-              />
-            )}
-
-            {currentStage === 3 && (
-              <Mission3
-                isUnlocked={unlocked[3]}
-                onUnlock={() => unlockStage(3)}
-                baseTopics={baseTopics}
-                setBaseTopics={setBaseTopics}
-                userName={userName}
-                setUserName={setUserName}
-                isMuted={isMuted}
-              />
-            )}
-
-            {currentStage === 4 && (
-              <Mission4
-                isUnlocked={unlocked[4]}
-                onUnlock={() => unlockStage(4)}
-                baseTopics={baseTopics}
-                userName={userName}
-                isMuted={isMuted}
-              />
-            )}
+            {currentStage === 1 && <Mission1 isUnlocked={unlocked[1]} onUnlock={() => unlockStage(1)} />}
+            {currentStage === 2 && <Mission2 isUnlocked={unlocked[2]} onUnlock={() => unlockStage(2)} isMuted={isMuted} />}
+            {currentStage === 3 && <Mission3 isUnlocked={unlocked[3]} onUnlock={() => unlockStage(3)} baseTopics={baseTopics} setBaseTopics={setBaseTopics} userName={userName} setUserName={setUserName} isMuted={isMuted} />}
+            {currentStage === 4 && <Mission4 isUnlocked={unlocked[4]} onUnlock={() => unlockStage(4)} baseTopics={baseTopics} userName={userName} isMuted={isMuted} />}
           </main>
-
           <div className="fixed bottom-0 w-full p-4 bg-white border-t-4 border-gray-200 flex justify-center z-40 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
-            <button
-              onClick={() => setCurrentStage(p => p + 1)}
-              disabled={!canGoNext() || currentStage === 4}
-              className={`font-black py-4 px-12 sm:py-5 sm:px-16 rounded-full text-xl sm:text-2xl shadow-xl border-b-8 transition-all duration-200 ${
-                canGoNext() && currentStage !== 4
-                  ? "bg-blue-600 hover:bg-blue-700 text-white active:border-b-0 active:translate-y-2 border-blue-800"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              {currentStage === 4 && unlocked[4]
-                ? '🎉 수고하셨습니다!'
-                : (canGoNext() ? '▶ 다음 미션으로' : '임무를 완수하세요')}
+            <button onClick={() => setCurrentStage(p => p + 1)} disabled={!canGoNext() || currentStage === 4} className={`font-black py-4 px-12 sm:py-5 sm:px-16 rounded-full text-xl sm:text-2xl shadow-xl border-b-8 transition-all duration-200 ${canGoNext() && currentStage !== 4 ? "bg-blue-600 hover:bg-blue-700 text-white active:border-b-0 active:translate-y-2 border-blue-800" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>
+              {currentStage === 4 && unlocked[4] ? '🎉 수고하셨습니다!' : (canGoNext() ? '▶ 다음 미션으로' : '임무를 완수하세요')}
             </button>
           </div>
         </div>
       );
     }
 
+    // 최종 렌더링
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>
